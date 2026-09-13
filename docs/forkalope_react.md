@@ -23,7 +23,7 @@ A qualified intellectual-property lawyer should review representative implemente
 
 1. Read applicable `AGENTS.md` files and repository instructions. Check the working tree; preserve unrelated work. Inspect the actual package manifest, lockfile, source tree, router, styles, components, tests, and supported backend operations.
 2. Use the existing package manager, React version, routing framework, build system, and testing tools. Do not create a second application, replace the framework, or perform a dependency migration for a page implementation.
-3. Write new UI in JavaScript and JSX. Do not introduce TypeScript, `.tsx`, a new state library, or a second component framework unless specifically requested. Preserve existing typed code rather than converting unrelated files.
+3. Write new UI in TypeScript and TSX as the standard for React sites in this project. Preserve existing typed code and avoid introducing a new state library or a second component framework unless specifically requested. JavaScript/JSX remains acceptable when integrating with an existing untyped surface.
 4. Locate the approved Forkalope logo, existing design tokens, licensed icon package, authentication context, API client, and permission checks. Reuse suitable components rather than producing parallel implementations.
 5. Identify the requested screens and states. Do not implement every screen in this skill when the task concerns only one. Share shell and component changes across affected pages deliberately.
 6. Determine which controls have real backend support. Inspect code or documented contracts; a control visible in a reference is not evidence that Forkalope supports it.
