@@ -1,0 +1,8 @@
+bin/
+.forkalope/
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+web/vite.config.d.ts
+web/vite.config.js
+.DS_Store
