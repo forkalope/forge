@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import RepoPage from "./RepoPage";
+import SiteFooter from "./SiteFooter";
 
 type ApiHealth = {
   status: string;
@@ -313,9 +314,9 @@ function HomePage() {
             </aside>
           </div>
 
-          <footer className="footer"><span>Forkalope <b>0.1.0-dev</b></span><span className="footer-status"><i className={healthState === "ready" ? "status-dot" : "status-dot status-dot-muted"} /> {health?.storage === "local" ? "Local storage" : healthState === "loading" ? "Checking node" : "Node disconnected"}</span><span>Open-source forge for the distributed web</span></footer>
         </main>
       </div>
+      <SiteFooter />
       {notice && <div className="toast" role="status"><ShieldCheck size={17} /><span>{notice}</span><button type="button" aria-label="Dismiss notification" onClick={() => setNotice(null)}><X size={16} /></button></div>}
     </div>
   );

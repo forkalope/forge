@@ -28,6 +28,7 @@ import {
   TerminalSquare,
   X,
 } from "lucide-react";
+import SiteFooter from "./SiteFooter";
 
 type Transport = "https" | "ssh";
 
@@ -185,6 +186,7 @@ function RepoPage() {
           </aside>
         </div>
       </main>
+      <SiteFooter />
       {notice && <div className="toast" role="status"><ShieldCheckIcon /><span>{notice}</span><button type="button" aria-label="Dismiss notification" onClick={() => setNotice(null)}><X size={16} /></button></div>}
     </div>
   );
