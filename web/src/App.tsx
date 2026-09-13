@@ -2,10 +2,16 @@ import { useEffect, useState, type ReactNode } from "react";
 import {
   Activity,
   ArrowUpRight,
+  CircleDot,
+  ChevronDown,
   Database,
   GitBranch,
+  GitFork,
   HardDrive,
   HeartPulse,
+  Inbox,
+  Menu,
+  Monitor,
   Network,
   Package,
   Plus,
@@ -13,6 +19,7 @@ import {
   Server,
   Settings,
   ShieldCheck,
+  UsersRound,
   Users,
 } from "lucide-react";
 
@@ -47,8 +54,26 @@ function App() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand"><img className="brand-logo" src="/logo.png" alt="Forkalope logo" /><span>forkalope</span></div>
+      <header className="topbar">
+        <div className="topbar-left">
+          <button className="menu-button" aria-label="Open navigation"><Menu size={22} /></button>
+          <img className="topbar-logo" src="/logo.png" alt="Forkalope" />
+        </div>
+        <div className="top-actions">
+          <button className="search-button"><Search size={20} /><span>Type <kbd>/</kbd> to search</span></button>
+          <button className="top-icon-button top-icon-with-chevron" aria-label="Organizations"><UsersRound size={20} /><ChevronDown size={15} /></button>
+          <span className="topbar-divider" />
+          <button className="top-icon-button top-icon-with-chevron" aria-label="Create new"><Plus size={21} /><ChevronDown size={15} /></button>
+          <button className="top-icon-button" aria-label="Issues"><CircleDot size={21} /></button>
+          <button className="top-icon-button" aria-label="Pull requests"><GitFork size={21} /></button>
+          <button className="top-icon-button" aria-label="Projects"><Monitor size={21} /></button>
+          <button className="top-icon-button notification-button" aria-label="Notifications"><Inbox size={21} /><i /></button>
+          <button className="avatar" aria-label="Account">AK</button>
+        </div>
+      </header>
+
+      <div className="workspace-shell">
+        <aside className="sidebar">
         <div className="node-card">
           <div className="node-icon"><Server size={17} /></div>
           <div><strong>home node</strong><span>lax-01 · online</span></div>
@@ -63,10 +88,9 @@ function App() {
           <a className="nav-link" href="#"><ShieldCheck size={18} /><span>Co-sysops</span></a>
         </nav>
         <div className="sidebar-bottom"><a className="nav-link" href="#"><Users size={18} /><span>Team</span></a><a className="nav-link" href="#"><Settings size={18} /><span>Settings</span></a></div>
-      </aside>
+        </aside>
 
-      <main className="main-content">
-        <header className="topbar"><div className="breadcrumbs"><span>Workspace</span><span>/</span><strong>Overview</strong></div><div className="top-actions"><button className="search-button"><Search size={16} /> Search <kbd>⌘ K</kbd></button><button className="avatar">AK</button></div></header>
+        <main className="main-content">
         <div className="content-wrap">
           <section className="hero"><div><p className="eyebrow">Saturday, September 13, 2026</p><h1>Good morning, Alex.</h1><p className="hero-copy">Your forge is healthy. Here’s what’s happening across your workspace.</p></div><button className="primary-button"><Plus size={17} /> New repository</button></section>
 
@@ -85,7 +109,8 @@ function App() {
           <section className="panel activity-panel"><div className="panel-heading"><div><p className="eyebrow">Across your workspace</p><h2>Recent activity</h2></div><a href="#">Activity log <ArrowUpRight size={14} /></a></div><div className="activity-list"><ActivityItem initials="MC" color="orange" text={<><strong>Maya Chen</strong> opened pull request <em>#42 Improve peer discovery</em></>} time="18 minutes ago" /><ActivityItem initials="AK" color="green" text={<><strong>You</strong> merged pull request <em>#39 Add blob integrity checks</em></>} time="2 hours ago" /><ActivityItem initials="JB" color="purple" text={<><strong>Jordan Bell</strong> pushed 4 commits to <em>node-protocol/main</em></>} time="Yesterday" /></div></section>
         </div>
         <footer className="footer"><span>Forkalope <b>0.1.0-dev</b></span><span className="footer-status"><i /> Local node connected · {health?.storage ?? "local storage"}</span><span>Built for the distributed web</span></footer>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
