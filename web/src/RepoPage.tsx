@@ -102,8 +102,11 @@ function RepoPage() {
   }, [notice]);
 
   const selectNav = (label: string) => {
+    if (label !== "Code") {
+      setNotice(`${label} will be available when repository metadata is connected.`);
+      return;
+    }
     setActiveNav(label);
-    if (label !== "Code") setNotice(`${label} will be available when repository metadata is connected.`);
   };
 
   const copyCloneAddress = async () => {
@@ -145,15 +148,22 @@ function RepoPage() {
 
       <main className="repo-main">
         <section className="repo-identity">
-          <div className="repo-identity-main"><div className="repo-title-lockup"><div className="repo-title-mark"><GitBranch size={22} /></div><h1>test/repo</h1><span className="repo-visibility">Public</span></div><p className="repo-description">A small repository fixture for testing Forkalope's local-first forge workflow.</p><div className="repo-topics"><span>local-first</span><span>git</span><span>react</span></div></div>
+          <div className="repo-title-mark"><GitBranch size={22} /></div>
+          <div className="repo-identity-main">
+            <div className="repo-title-lockup"><h1>test/repo</h1><span className="repo-visibility">Public</span></div>
+            <div className="repo-summary-line"><p className="repo-description">A small repository fixture for testing Forkalope's local-first forge workflow.</p><div className="repo-topics"><span>local-first</span><span>git</span><span>react</span></div></div>
+          </div>
           <div className="repo-actions"><RepoAction icon={GitBranch} label="Watch" onClick={() => setNotice("Watch subscriptions will be available with notifications.")} /><RepoAction icon={GitFork} label="Fork" onClick={() => setNotice("Forking is planned for the next repository milestone.")} /><RepoAction icon={Star} label="Star" onClick={() => setNotice("Stars will be available when repository metadata is connected.")} /></div>
         </section>
 
-        <nav className="repo-nav" aria-label="Repository sections">
-          {navItems.map(({ label, icon: Icon, count }) => <button className={activeNav === label ? "repo-nav-link active" : "repo-nav-link"} type="button" aria-current={activeNav === label ? "page" : undefined} key={label} onClick={() => selectNav(label)}><Icon size={19} /><span>{label}</span>{count && <b>{count}</b>}</button>)}
-        </nav>
-
         <div className="repo-workspace">
+          <aside className="repo-section-sidebar">
+            <p className="repo-section-label">Repository</p>
+            <nav className="repo-nav" aria-label="Repository sections">
+              {navItems.map(({ label, icon: Icon, count }) => <button className={activeNav === label ? "repo-nav-link active" : "repo-nav-link"} type="button" aria-current={activeNav === label ? "page" : undefined} key={label} onClick={() => selectNav(label)}><Icon size={18} /><span>{label}</span>{count && <b>{count}</b>}</button>)}
+            </nav>
+          </aside>
+
           <section className="repo-primary">
             <div className="repo-toolbar">
               <div className="branch-controls"><button className="branch-button" type="button" onClick={() => setNotice("Branch selection is planned for the repository browser.")}><GitBranch size={18} /> main <ChevronDown size={14} /></button><span className="count-control"><GitBranch size={18} /> 1 Branch</span><span className="count-control"><Archive size={18} /> 0 Tags</span></div>
@@ -165,8 +175,13 @@ function RepoPage() {
           </section>
 
           <aside className="repo-sidebar">
-            <section className="about-section"><div className="about-heading"><h2>Repository details</h2><button className="about-settings" type="button" aria-label="Edit repository details" onClick={() => setNotice("Repository details editing is coming soon.")}><Settings2 size={18} /></button></div><a className="about-link" href="/docs/architecture.md"><BookOpen size={18} /> docs/architecture.md <ExternalLink size={14} /></a><div className="about-facts"><button type="button" onClick={() => setNotice("README view is planned.")}><BookOpen size={18} /> README</button><button type="button" onClick={() => setNotice("License metadata is planned.")}><Shield size={18} /> License</button><button type="button" onClick={() => setNotice("Activity history is planned.")}><Activity size={18} /> Activity</button><button type="button" onClick={() => setNotice("Star counts are planned.")}><Star size={18} /> 0 stars</button><button type="button" onClick={() => setNotice("Watch counts are planned.")}><Bell size={18} /> 0 watching</button><button type="button" onClick={() => setNotice("Fork counts are planned.")}><GitFork size={18} /> 0 forks</button></div></section>
-            <section className="release-section"><h2>Releases</h2><p>No releases published</p><button type="button" onClick={() => setNotice("Release publishing is planned.")}>Create a new release</button></section>
+            <section className="about-section">
+              <div className="about-heading"><div><span>Repository</span><h2>Details</h2></div><button className="about-settings" type="button" aria-label="Edit repository details" onClick={() => setNotice("Repository details editing is coming soon.")}><Settings2 size={18} /></button></div>
+              <button className="about-link" type="button" onClick={() => setNotice("Repository documentation browsing is planned.")}><BookOpen size={18} /><span>docs/architecture.md</span><ExternalLink size={14} /></button>
+              <div className="about-facts"><button type="button" onClick={() => setNotice("README view is planned.")}><BookOpen size={18} /> README</button><button type="button" onClick={() => setNotice("License metadata is planned.")}><Shield size={18} /> License</button><button type="button" onClick={() => setNotice("Activity history is planned.")}><Activity size={18} /> Activity</button></div>
+              <div className="repo-stat-line"><span><Star size={16} /> 0 stars</span><span><Bell size={16} /> 0 watching</span><span><GitFork size={16} /> 0 forks</span></div>
+              <div className="release-summary"><div><span>Releases</span><strong>None published</strong></div><button type="button" onClick={() => setNotice("Release publishing is planned.")}>Create</button></div>
+            </section>
           </aside>
         </div>
       </main>
@@ -184,7 +199,7 @@ function RepoAction({ icon: Icon, label, onClick }: { icon: LucideIcon; label: s
 }
 
 function ClonePanel({ transport, setTransport, cloneAddress, inputRef, onCopy, onNotice }: { transport: Transport; setTransport: (transport: Transport) => void; cloneAddress: string; inputRef: RefObject<HTMLInputElement | null>; onCopy: () => void; onNotice: (notice: string) => void }) {
-  return <section className="clone-panel" aria-label="Clone repository" role="region"><div className="clone-tabs"><button className="clone-tab active" type="button">Local</button><button className="clone-tab" type="button" onClick={() => onNotice("Remote workspace integrations are not connected yet.")}>Integrations</button></div><div className="clone-content"><div className="clone-heading"><div><TerminalSquare size={20} /><h2 id="clone-title">Clone</h2></div><button type="button" aria-label="Clone help" onClick={() => onNotice("Clone transports will use the configured Forkalope node.")}><span>?</span></button></div><div className="transport-tabs" role="tablist" aria-label="Clone transport"><button className={transport === "https" ? "transport-tab active" : "transport-tab"} type="button" role="tab" aria-selected={transport === "https"} onClick={() => setTransport("https")}>HTTPS</button><button className={transport === "ssh" ? "transport-tab active" : "transport-tab"} type="button" role="tab" aria-selected={transport === "ssh"} onClick={() => setTransport("ssh")}>SSH</button></div><div className="clone-address"><input ref={inputRef} value={cloneAddress} readOnly aria-label="Clone address" /><button type="button" aria-label="Copy clone address" onClick={onCopy}><Copy size={19} /></button></div><p className="clone-note">Fixture address for this test repository. Repository endpoints are not connected yet.</p><div className="clone-actions"><button type="button" onClick={() => onNotice("Forkalope Studio is not connected yet.")}><SparkIcon /> Open in Forkalope Studio</button><button type="button" onClick={() => onNotice("Download ZIP is planned for the repository browser.")}><Archive size={18} /> Download ZIP</button></div></div></section>;
+  return <section className="clone-panel" aria-labelledby="clone-title" role="dialog"><div className="clone-tabs"><button className="clone-tab active" type="button">Local</button><button className="clone-tab" type="button" onClick={() => onNotice("Remote workspace integrations are not connected yet.")}>Integrations</button></div><div className="clone-content"><div className="clone-heading"><div><TerminalSquare size={20} /><h2 id="clone-title">Clone</h2></div><button type="button" aria-label="Clone help" onClick={() => onNotice("Clone transports will use the configured Forkalope node.")}><span>?</span></button></div><div className="transport-tabs" role="tablist" aria-label="Clone transport"><button className={transport === "https" ? "transport-tab active" : "transport-tab"} type="button" role="tab" aria-selected={transport === "https"} onClick={() => setTransport("https")}>HTTPS</button><button className={transport === "ssh" ? "transport-tab active" : "transport-tab"} type="button" role="tab" aria-selected={transport === "ssh"} onClick={() => setTransport("ssh")}>SSH</button></div><div className="clone-address"><input ref={inputRef} value={cloneAddress} readOnly aria-label="Clone address" /><button type="button" aria-label="Copy clone address" onClick={onCopy}><Copy size={19} /></button></div><p className="clone-note">Fixture address for this test repository. Repository endpoints are not connected yet.</p><div className="clone-actions"><button type="button" onClick={() => onNotice("Forkalope Studio is not connected yet.")}><SparkIcon /> Open in Forkalope Studio</button><button type="button" onClick={() => onNotice("Download ZIP is planned for the repository browser.")}><Archive size={18} /> Download ZIP</button></div></div></section>;
 }
 
 function ShieldCheckIcon() {
