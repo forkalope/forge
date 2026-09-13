@@ -48,7 +48,7 @@ function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand"><div className="brand-mark">F</div><span>forkalope</span></div>
+        <div className="brand"><img className="brand-logo" src="/logo.png" alt="Forkalope logo" /><span>forkalope</span></div>
         <div className="node-card">
           <div className="node-icon"><Server size={17} /></div>
           <div><strong>home node</strong><span>lax-01 · online</span></div>
