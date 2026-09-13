@@ -22,6 +22,7 @@ import {
   TerminalSquare,
   X,
 } from "lucide-react";
+import RepoPage from "./RepoPage";
 
 type ApiHealth = {
   status: string;
@@ -73,7 +74,7 @@ const activityItems = [
   },
 ];
 
-function App() {
+function HomePage() {
   const [health, setHealth] = useState<ApiHealth | null>(null);
   const [healthState, setHealthState] = useState<"loading" | "ready" | "error">("loading");
   const [repoQuery, setRepoQuery] = useState("");
@@ -338,6 +339,10 @@ function ActivityItem({ icon: Icon, label, title, detail, time, accent }: { icon
 
 function ChangelogItem({ time, title }: { time: string; title: string }) {
   return <article className="changelog-item"><span className="timeline-dot" aria-hidden="true" /><div><time>{time}</time><h3>{title}</h3></div></article>;
+}
+
+function App() {
+  return window.location.pathname === "/test/repo" ? <RepoPage /> : <HomePage />;
 }
 
 export default App;
