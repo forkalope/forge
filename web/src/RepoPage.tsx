@@ -26,7 +26,6 @@ import {
   Shield,
   Star,
   TerminalSquare,
-  UsersRound,
   X,
 } from "lucide-react";
 
@@ -134,28 +133,25 @@ function RepoPage() {
               <input placeholder="Search or jump to..." />
               <kbd>/</kbd>
             </label>
-            <button className="repo-icon-action" type="button" aria-label="Open team menu" onClick={() => setNotice("Team access is not connected yet.")}><UsersRound size={19} /></button>
             <div className="create-wrap" ref={createRef}>
-              <button className="repo-icon-action create-trigger" type="button" aria-label="Open create menu" aria-expanded={createOpen} aria-haspopup="menu" onClick={() => setCreateOpen((open) => !open)}><Plus size={20} /><ChevronDown size={13} /></button>
+              <button className="repo-labeled-action create-labeled" type="button" aria-label="Open create menu" aria-expanded={createOpen} aria-haspopup="menu" onClick={() => setCreateOpen((open) => !open)}><Plus size={19} /><span>Create</span><ChevronDown size={13} /></button>
               {createOpen && <div className="popover repo-create-menu" role="menu" aria-label="Create"><p className="popover-heading">Create in Forkalope</p><RepoCreateItem icon={CircleDot} label="New issue" onClick={() => setNotice("Issue tracking is planned for the next backend milestone.")} /><RepoCreateItem icon={Archive} label="New repository" onClick={() => setNotice("Repository creation is planned for the next backend milestone.")} /><RepoCreateItem icon={Inbox} label="Import repository" onClick={() => setNotice("Repository import is not connected yet.")} /></div>}
             </div>
-            <button className="repo-icon-action" type="button" aria-label="Open issues" onClick={() => setNotice("Issue tracking is planned for the next backend milestone.")}><CircleDot size={19} /></button>
-            <button className="repo-icon-action" type="button" aria-label="Open pull requests" onClick={() => setNotice("Pull requests are planned for the next backend milestone.")}><GitFork size={19} /></button>
-            <button className="repo-icon-action" type="button" aria-label="Open notifications" onClick={() => setNotice("Your inbox is clear.")}><Bell size={19} /></button>
+            <button className="repo-labeled-action inbox-labeled" type="button" onClick={() => setNotice("Your inbox is clear.")}><Inbox size={18} /><span>Inbox</span></button>
             <button className="account-button" type="button" aria-label="Open account menu" onClick={() => setNotice("Account settings are coming soon.")}>AK</button>
           </div>
         </div>
-
-        <nav className="repo-nav" aria-label="Repository sections">
-          {navItems.map(({ label, icon: Icon, count }) => <button className={activeNav === label ? "repo-nav-link active" : "repo-nav-link"} type="button" aria-current={activeNav === label ? "page" : undefined} key={label} onClick={() => selectNav(label)}><Icon size={19} /><span>{label}</span>{count && <b>{count}</b>}</button>)}
-        </nav>
       </header>
 
       <main className="repo-main">
         <section className="repo-identity">
-          <div className="repo-title-lockup"><div className="repo-title-mark"><GitBranch size={22} /></div><h1>test/repo</h1><span className="repo-visibility">Public</span></div>
+          <div className="repo-identity-main"><div className="repo-title-lockup"><div className="repo-title-mark"><GitBranch size={22} /></div><h1>test/repo</h1><span className="repo-visibility">Public</span></div><p className="repo-description">A small repository fixture for testing Forkalope's local-first forge workflow.</p><div className="repo-topics"><span>local-first</span><span>git</span><span>react</span></div></div>
           <div className="repo-actions"><RepoAction icon={GitBranch} label="Watch" onClick={() => setNotice("Watch subscriptions will be available with notifications.")} /><RepoAction icon={GitFork} label="Fork" onClick={() => setNotice("Forking is planned for the next repository milestone.")} /><RepoAction icon={Star} label="Star" onClick={() => setNotice("Stars will be available when repository metadata is connected.")} /></div>
         </section>
+
+        <nav className="repo-nav" aria-label="Repository sections">
+          {navItems.map(({ label, icon: Icon, count }) => <button className={activeNav === label ? "repo-nav-link active" : "repo-nav-link"} type="button" aria-current={activeNav === label ? "page" : undefined} key={label} onClick={() => selectNav(label)}><Icon size={19} /><span>{label}</span>{count && <b>{count}</b>}</button>)}
+        </nav>
 
         <div className="repo-workspace">
           <section className="repo-primary">
@@ -164,14 +160,12 @@ function RepoPage() {
               <div className="repo-tool-actions"><button className="repo-tool-button" type="button" onClick={() => setNotice("File search is planned for the repository browser.")}><Search size={17} /> Go to file <kbd>T</kbd></button><button className="repo-tool-button" type="button" onClick={() => setNotice("File creation is planned for the next repository milestone.")}><FileCode2 size={17} /> Add file <ChevronDown size={14} /></button><div className="clone-wrap" ref={cloneRef}><button className={cloneOpen ? "clone-trigger open" : "clone-trigger"} type="button" aria-expanded={cloneOpen} aria-haspopup="dialog" onClick={() => setCloneOpen((open) => !open)}><TerminalSquare size={18} /> Clone <ChevronDown size={14} /></button>{cloneOpen && <ClonePanel transport={transport} setTransport={setTransport} cloneAddress={cloneAddress} inputRef={cloneInputRef} onCopy={copyCloneAddress} onNotice={setNotice} />}</div></div>
             </div>
 
-            <section className="file-card" aria-label="Repository files">
-              <div className="commit-summary"><div className="commit-avatar">AK</div><strong>alex</strong><span>look for new repos to learn from</span><span className="commit-ref">a4c3f7 · 4 months ago</span><span className="commit-count"><GitCommitHorizontal size={17} /> 749 Commits</span></div>
-              <div className="file-list">{fileEntries.map((entry) => <button className="file-row" type="button" key={entry.name} onClick={() => setNotice(`${entry.name} is selected.`)}><span className="file-icon">{entry.kind === "folder" ? <Folder size={21} /> : <FileCode2 size={20} />}</span><strong>{entry.name}</strong><span className="file-message">{entry.message}</span><time>{entry.time}</time></button>)}</div>
-            </section>
+            <section className="commit-panel" aria-label="Latest commit"><div className="commit-summary"><div className="commit-avatar">AK</div><strong>alex</strong><span>look for new repos to learn from</span><span className="commit-ref">a4c3f7 · 4 months ago</span><span className="commit-count"><GitCommitHorizontal size={17} /> 749 Commits</span></div></section>
+            <section className="file-card" aria-label="Repository files"><div className="file-list-heading"><span>Name</span><span>Latest change</span><span>Updated</span></div><div className="file-list">{fileEntries.map((entry) => <button className="file-row" type="button" key={entry.name} onClick={() => setNotice(`${entry.name} is selected.`)}><span className="file-icon">{entry.kind === "folder" ? <Folder size={21} /> : <FileCode2 size={20} />}</span><strong>{entry.name}</strong><span className="file-message">{entry.message}</span><time>{entry.time}</time></button>)}</div></section>
           </section>
 
           <aside className="repo-sidebar">
-            <section className="about-section"><div className="about-heading"><h2>About</h2><button className="about-settings" type="button" aria-label="Edit repository details" onClick={() => setNotice("Repository details editing is coming soon.")}><Settings2 size={18} /></button></div><p>A small repository fixture for testing Forkalope's local-first forge workflow.</p><a className="about-link" href="/docs/architecture.md"><BookOpen size={18} /> docs/architecture.md <ExternalLink size={14} /></a><div className="topic-list"><span>local-first</span><span>git</span><span>react</span></div><div className="about-facts"><button type="button" onClick={() => setNotice("README view is planned.")}><BookOpen size={18} /> README</button><button type="button" onClick={() => setNotice("License metadata is planned.")}><Shield size={18} /> License</button><button type="button" onClick={() => setNotice("Activity history is planned.")}><Activity size={18} /> Activity</button><button type="button" onClick={() => setNotice("Star counts are planned.")}><Star size={18} /> 0 stars</button><button type="button" onClick={() => setNotice("Watch counts are planned.")}><Bell size={18} /> 0 watching</button><button type="button" onClick={() => setNotice("Fork counts are planned.")}><GitFork size={18} /> 0 forks</button></div></section>
+            <section className="about-section"><div className="about-heading"><h2>Repository details</h2><button className="about-settings" type="button" aria-label="Edit repository details" onClick={() => setNotice("Repository details editing is coming soon.")}><Settings2 size={18} /></button></div><a className="about-link" href="/docs/architecture.md"><BookOpen size={18} /> docs/architecture.md <ExternalLink size={14} /></a><div className="about-facts"><button type="button" onClick={() => setNotice("README view is planned.")}><BookOpen size={18} /> README</button><button type="button" onClick={() => setNotice("License metadata is planned.")}><Shield size={18} /> License</button><button type="button" onClick={() => setNotice("Activity history is planned.")}><Activity size={18} /> Activity</button><button type="button" onClick={() => setNotice("Star counts are planned.")}><Star size={18} /> 0 stars</button><button type="button" onClick={() => setNotice("Watch counts are planned.")}><Bell size={18} /> 0 watching</button><button type="button" onClick={() => setNotice("Fork counts are planned.")}><GitFork size={18} /> 0 forks</button></div></section>
             <section className="release-section"><h2>Releases</h2><p>No releases published</p><button type="button" onClick={() => setNotice("Release publishing is planned.")}>Create a new release</button></section>
           </aside>
         </div>
