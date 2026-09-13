@@ -1,45 +1,56 @@
 ---
 name: forkalope-interface-design
 description: >-
-  Design and review Forkalope interfaces from screenshots or product
-  workflows. Preserve Git-hosting conventions while requiring a distinct
-  Forkalope composition, verified assets, truthful capabilities, and
-  accessible states.
+  Design and review Forkalope product interfaces from screenshots, existing
+  pages, or workflows. Translate references into a compact, recognizable
+  developer-tool UI with truthful states and accessible interactions.
 ---
 
 # Forkalope Interface Design
 
-Forkalope should feel familiar to developers without reading as another provider's themed installation. Preserve task meaning and useful vocabulary; independently compose the shell, hierarchy, grouping, and content presentation.
+Design for the user's task, not for visual similarity to a reference. Preserve useful Git concepts and familiar operation names, while fitting them into Forkalope's own hierarchy, spacing, navigation, and visual system.
 
-This is product design and engineering guidance, not legal clearance. Visual difference, a new logo, a license, or completion of this checklist does not establish non-infringement. Escalate unresolved rights, terms, branding, or affiliation questions to qualified counsel.
+## Establish the design
 
-## Before implementation
+Before proposing or implementing a layout:
 
-1. Read repository instructions, existing components, tokens, assets, package licenses, routes, and supported backend capabilities.
-2. Build a neutral functional brief: user goal, entities, entry point, interactions, results, important states, permissions, and unresolved assumptions.
-3. Classify reference details as functional conventions, expressive presentation, or third-party material. Preserve supported operations; independently design presentation; verify or replace third-party content.
-4. Use synthetic fixture content for test pages. Do not copy personal names, avatars, branded prose, logos, or deployed site assets from a reference.
+1. Inspect the repository instructions, existing screens, components, tokens, assets, routes, and available product data.
+2. Identify the page's primary job, key objects, common actions, and required states.
+3. Treat screenshots as evidence about content and workflow. Separate required functionality from source-specific styling and composition.
+4. State a short visual thesis and interaction thesis. For redesigns, decide what can be removed or consolidated before adding UI.
 
-## Forkalope composition rules
+Use project-owned assets and the installed icon system. Do not copy third-party branding, personal data, prose, or decorative assets. Use deterministic synthetic content for fixture routes.
 
-Use a compact developer-tool system: near-black or warm charcoal canvas, flat blue-charcoal surfaces, readable system typography, restrained coral-orange identity accents, and semantic green/amber/red status colors. Use borders and panels only when they clarify grouping. Ordinary licensed icons may remain; identity comes from the assembled system, not icon redrawing.
+## Forkalope visual language
 
-For repository pages, use this distinct relationship between regions:
+Forkalope is a compact, dark developer tool:
 
-- **Global header:** Forkalope wordmark, repository context, labeled search, labeled Create, labeled Inbox, account access, and at most one compact secondary utility menu. Do not reproduce an uninterrupted row of outlined icon-only utilities.
-- **Repository context:** Put owner/repository, visibility, a short description, and repository-level actions together in one contextual masthead. The user should know which repository they are in before scanning its sections.
-- **Repository navigation:** Place familiar sections below the context. Use a filled selected state with text emphasis and an independent focus ring. An orange underline alone is not the selected treatment.
-- **Working area:** Make the file browser the primary workspace. Keep branch/ref selection, file search, Add file, and Clone close to the files, but do not copy a competitor's exact toolbar geometry.
-- **File organization:** Separate latest-commit context from the file-list header. Use clear columns or a distinct summary block. Keep description/topics in the contextual header where possible.
-- **Supplemental details:** Use one labeled Repository details/About region for remaining metadata. Do not mechanically recreate an About → statistics → Releases stack when a compact details section communicates the same information.
-- **Overlays:** Clone, Create, and filters are real triggered overlays with bounded, independently composed panels. Do not ship screenshot states as permanently open.
+- near-black canvas with cool blue-charcoal surfaces;
+- coral-orange for identity, focus, and a small number of primary actions;
+- semantic green, amber, and red for status;
+- readable system typography, restrained borders, and modest radii;
+- dense lists, rows, tables, and controls for authenticated product screens.
 
-For dashboards and other product surfaces, prioritize actual work and supported data over marketing copy, assistant composers, promotional feeds, or fabricated metrics. “Unknown,” “Not connected,” and “Planned” are valid states.
+Avoid brown accent surfaces, orange-on-brown combinations, ornamental gradients, generic card grids, oversized headings, and empty space that separates related information. Prefer typography, alignment, and spacing over additional containers.
 
-## Accessibility and review
+Visual independence should come from the assembled page, not renamed Git operations or redrawn ordinary icons. Do not mechanically transfer every horizontal band, sidebar block, or toolbar arrangement from a reference.
 
-Use semantic HTML. Buttons perform actions; links navigate. Every input has a visible or screen-reader label, icon buttons have accessible names, focus is visible, and status meaning is not conveyed by color alone. Use the correct menu, disclosure, combobox, dialog, or tab pattern. Support Escape and focus return for overlays, 44px touch targets where practical, mobile reflow without page-wide scrolling, and reduced motion.
+## Product composition
 
-Inspect default, loading, error, empty, no-match, selected, open-overlay, and responsive states in the actual application. Review the whole composition at approximately 1440px, 1024px, and 390px widths. Record actual assets/dependencies, tests, browser evidence, and unresolved release-review items separately from engineering completion.
+Use these as defaults, not a mandatory template:
 
-Do not claim legal approval, guaranteed non-infringement, or unverified backend support.
+- Keep the global shell small. Show Forkalope branding, relevant context, search, creation, inbox, and account access when the page needs them. Group infrequent utilities instead of building a long strip of icon-only buttons.
+- Put repository identity, visibility, description, and repository-level actions near one another.
+- Use horizontal tabs or a vertical section rail according to available space and content density. The current section needs a filled selected state and a visible focus state; an underline alone is insufficient.
+- Make the primary workspace dominant. Keep branch selection, file search, Add file, Clone, and similar controls close to the content they affect.
+- Keep latest-commit context distinct from file-list column headings.
+- Consolidate supplemental metadata into a compact details region. Avoid repeating description, topics, statistics, and releases across multiple visual levels.
+- Render menus, filters, and clone controls as triggered overlays, not permanently open screenshot states.
+
+For dashboards and management screens, foreground real work and supported data. Prefer concise `Unavailable`, `Not connected`, `Unknown`, and `Planned` states to invented metrics or fake success.
+
+## Review standard
+
+Check the rendered application, not only the source. Review hierarchy, alignment, density, long and missing values, selected and unavailable states, open overlays, and keyboard focus. Verify responsive behavior around 390, 768, 1280, and 1440 pixels, with no page-wide horizontal scrolling.
+
+Use semantic controls, accessible names, readable contrast, non-color status cues, practical touch targets, Escape dismissal and focus return for overlays, and reduced-motion support where motion exists.

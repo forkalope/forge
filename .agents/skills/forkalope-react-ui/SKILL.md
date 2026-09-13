@@ -1,42 +1,52 @@
 ---
 name: forkalope-react-ui
-description: Implement real Forkalope React/TypeScript pages from screenshots and workflows with an independently composed shell, accessible interactions, truthful capabilities, and browser-tested states.
+description: >-
+  Implement and refine Forkalope React/TypeScript product pages from
+  screenshots or workflows using the existing app, design system, real
+  interactions, truthful capabilities, and responsive browser verification.
 ---
 
 # Forkalope React UI
 
-Implement working pages in the existing React application. A screenshot is a reference for tasks and relationships, not a pixel specification or a reason to rasterize the page.
+Build working product UI in the existing React application. A screenshot supplies content and workflow clues; it is not a pixel specification or a reason to copy the source page's full composition.
 
-## Inspect first
+## Inspect before editing
 
-- Read repository instructions, package manifests, lockfiles, routes, existing components, styles, API adapters, and tests.
-- Preserve unrelated work and use the existing Vite/React/TypeScript setup. New React UI should use TypeScript and TSX; JavaScript/JSX is acceptable only when integrating with an existing untyped surface.
-- Identify real backend support. Do not invent successful API data, permissions, clone endpoints, workflows, companion products, or third-party integrations. Use explicit deterministic fixture adapters for test-only pages and label unavailable capabilities honestly.
-- Use the approved Forkalope logo and the installed licensed icon family. Record new dependency/asset provenance and required notices.
+- Read repository instructions, manifests, routes, nearby components, styling conventions, API adapters, and relevant tests.
+- Preserve unrelated changes and reuse existing components and tokens before adding abstractions or dependencies.
+- Follow this project's React and TypeScript conventions. New components should use TypeScript and TSX; do not convert typed code to JavaScript.
+- Confirm which data and operations are real. For test-only routes, use deterministic fixture data and make unavailable capabilities explicit.
+- Use the existing Forkalope logo and installed icon package. Record provenance only when introducing a new asset or dependency.
 
-## Shared layout baseline
+## Build the page
 
-Use a small set of shared tokens and composed components rather than page-specific chrome. Forkalope's default is near-black canvas, blue-charcoal surfaces, coral-orange actions/identity, readable system typography, restrained borders, and semantic status colors.
+Keep authenticated product pages compact and utilitarian. Favor readable rows, lists, tables, and forms over hero treatments, decorative cards, or marketing copy.
 
-The global header should contain Forkalope branding, repository context where relevant, labeled search, labeled Create, labeled Inbox, and account access. Put infrequent utilities in a labeled menu; avoid a long sequence of icon-only outlined buttons.
+Forkalope's default palette is a near-black canvas, cool blue-charcoal surfaces, coral-orange identity and primary actions, and semantic status colors. Avoid brown accent surfaces and decorative effects that do not clarify the interface.
 
-Repository pages must follow this hierarchy:
+For repository pages:
 
-1. Repository context masthead: owner/repository, visibility, description, and repo actions together.
-2. Repository sections: familiar Code, Issues, Pull requests, Actions, and other supported sections below the context, with a filled selected state.
-3. Working toolbar and file browser: branch/ref, file search, Add file, Clone, commit context, and readable rows.
-4. A compact Repository details region for description/topics/metadata not needed in the masthead.
+- keep repository identity and repository-level actions together;
+- choose a horizontal section bar or vertical section rail based on fit rather than copying the reference;
+- use a filled selected state with a separate keyboard focus treatment;
+- make the file browser the primary workspace and keep its controls nearby;
+- separate latest-commit context from file-list headings;
+- keep secondary metadata in one compact details region when possible.
 
-Do not reproduce the source page's complete sequence of global header → navigation → title/action strip → toolbar → commit-card/file-table → About/statistics stack. Reorganize those same tasks into the hierarchy above. Keep familiar terminology such as Fork, Watch, Clone, HTTPS, SSH, Code, Issues, and Pull requests when accurate; do not rename operations merely to look different.
+Do not stack full-width bands merely because a reference does. Preserve familiar terms such as Code, Issues, Pull requests, Watch, Fork, Clone, HTTPS, and SSH when they are accurate.
 
-## React implementation
+## React and interaction rules
 
-Prefer small composed components with focused responsibilities. Use stable keys, one coherent state model, semantic links/buttons, and existing routing conventions. Do not leave placeholder `#` links. Keep transient overlay state separate from server-authoritative data. Render repository text as text and use the reviewed Markdown pipeline for rich content.
+- Keep components focused and state ownership clear. Separate transient overlay state from server or fixture data.
+- Use semantic links for navigation and buttons for actions. Do not use dead `#` links or navigate to routes that do not exist.
+- Do not visually activate an unavailable section while leaving the old content in place. Omit it, disable it with an explanation, or keep the current section active and provide concise feedback.
+- Give inputs accessible labels and icon-only controls accessible names. Preserve visible keyboard focus.
+- Menus and popovers need real triggers, `aria-expanded` and an appropriate `aria-haspopup`, Escape dismissal, outside-interaction dismissal, and viewport-safe placement.
+- Keep clone transport and displayed/copy values synchronized. Announce copy success only after success and provide a selectable fallback after failure.
+- Keep mobile controls usable without shrinking text or allowing page-wide horizontal overflow. Let dense tables reduce columns or scroll within their own region.
 
-For menus and popovers: use real triggers with `aria-expanded`/`aria-haspopup`, close on Escape and deliberate outside interaction, close unrelated peer overlays, and keep panels within the viewport. For Clone: keep transport selection and displayed/copy value synchronized, report copy success only after the clipboard succeeds, and provide a selectable fallback on failure. Use a non-modal panel on desktop and a bounded mobile presentation unless a true modal is required.
+## Validate
 
-For unsupported controls, either omit them or make their unavailable state explicit and actionable. Never hide a permission or capability decision in styling alone.
+Run the relevant build, typecheck, lint, and tests that exist in the repository. Browser-check the direct route at approximately 390x844, 768x1024, 1280x800, and 1440x900 when the change affects layout.
 
-## Validation
-
-Run the repository's build, lint, and relevant tests. Browser-test direct routes and important states at desktop, intermediate, and 390px mobile widths. Exercise search/filtering, overlay opening/dismissal, keyboard Escape, transport switching, copy success/failure, long content, no-match, loading, error, and no horizontal overflow where relevant. Report implemented behavior, exact commands/results, browser evidence, asset provenance, and unresolved backend or release-review items separately. Do not claim legal clearance.
+Exercise the states changed by the task: default, selected, unavailable, open and dismissed overlays, keyboard Escape, narrow content, long values, and empty/error/loading states when relevant. Report actual verification results and any remaining backend limitation without presenting planned behavior as implemented.
