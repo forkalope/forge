@@ -8,60 +8,25 @@ Forkalope should be built as two products on one foundation:
 2. A repeatable training environment that makes that node behave like a
    production service under realistic load, failure, and recovery pressure.
 
-The first milestone should be an **observable single-node forge slice**, not a
-large collection of GitHub-shaped screens and not federation. It should let a
-student install Forkalope, create an account and repository, clone and push
-with normal Git, observe the system, deliberately break it, and restore it.
+The first release should be an **observable single-node forge plus one
+complete, safely deliverable SRE lesson**. It should let a student install
+Forkalope, create an account and repository, clone and push with normal Git,
+observe the system, investigate one controlled failure, restore service, and
+prove what data survived.
 
-That slice gives us a real product, a real operational surface, and a small
-enough system that junior SREs can understand end to end.
+That is the first sellable training experience. It gives us a real product, a
+real operational surface, and a small enough system that junior SREs can
+understand end to end. It does not require a nearly complete GitHub
+alternative.
 
-## Review of the new web homepage
+The build rule is:
 
-The new React homepage is a good product direction for an authenticated forge
-workspace:
+> Build forge features when they unlock an essential Git workflow or a
+> specific scheduled lesson. Do not make the school wait for a feature merely
+> because GitHub has it.
 
-- The dark blue-charcoal surfaces, coral action color, compact rows, and
-  responsive sidebar establish a recognizable Forkalope language.
-- The hierarchy is sensible: repository rail, workspace search, recent
-  activity, node status, and product notes.
-- The node panel already points toward the important Forkalope distinction:
-  this is not only a code UI; it is also an operating node.
-- The unavailable state is honest when the Go API is not running. That is much
-  better than showing invented green health metrics.
-- The mobile layout collapses the navigation and keeps the main actions usable
-  at 390px. The desktop layout is appropriately dense rather than becoming a
-  marketing page.
-
-The important limitation is product truth, not visual polish. The page is
-currently a convincing shell around fixture data:
-
-- repositories and activity are constants in `web/src/App.tsx`;
-- repository selection only shows a toast;
-- create, inbox, account, issues, branches, and settings actions mostly say
-  that a future milestone is planned;
-- the activity overflow buttons have no action;
-- the quick-action chevrons imply menus even though the controls are only
-  buttons;
-- health is the only meaningful API-backed value, and the API currently
-  reports only process/blob-store status.
-
-This is acceptable for a shell prototype. It should not become the product's
-long-term shape. The homepage should be the first integration consumer of the
-real API, with explicit `loading`, `empty`, `error`, `permission-denied`, and
-`unavailable` states. A user should be able to tell the difference between:
-
-```text
-No repositories yet       empty
-The node cannot be reached unavailable
-The node is healthy        ready
-The feature is not shipped planned
-```
-
-The next UI pass should therefore remove or simplify controls that do not yet
-have a meaningful action, or make their planned state explicit in the control
-itself. It should not add more dashboard content to compensate for the lack of
-backend data.
+The dated visual review is kept separately in
+[homepage_review_2026-09-14.md](./homepage_review_2026-09-14.md).
 
 ## Product principles
 
@@ -104,9 +69,20 @@ The future node classes should remain distinct:
 The simulator must be able to model all three without pretending they have the
 same trust or reliability.
 
-## Recommended build order
+## Approved build order
 
-### Milestone 0: operating foundation
+This is the authoritative sequence for the first release. Collaboration
+features are intentionally moved after the first complete lesson and pilot.
+
+| Stage | Deliverable | Completion test |
+| --- | --- | --- |
+| **1. Working Git core** | Minimal authentication, repository lifecycle, real clone/fetch/push, basic browsing, truthful logs and status | A fresh installation completes the ordinary Git workflow without fixtures. |
+| **2. First complete lesson** | Tiny workload driver, one controlled fault, recovery checks, student briefing, instructor guide, reset | Someone other than the author can complete the exercise with documented support. |
+| **3. Small training pilot** | A few distinct exercises, reviewed work, an unfamiliar assessment, one preventive improvement | Learning and feedback can be delivered sustainably. |
+| **4. Expand from evidence** | Selected background jobs, collaboration features, and harder workloads | Each addition supports a concrete product need or scheduled lesson. |
+| **5. Recovery network** | Replication, freshness checks, explicit write authority, and promotion drills | Recovery preserves the stated data and authority guarantees. |
+
+## Stage 0: operating foundation
 
 Build this before adding many user-facing features:
 
@@ -123,11 +99,17 @@ Build this before adding many user-facing features:
 - a deterministic seed/demo mode that can be reset without touching a real
   installation.
 
-Exit criteria: a student can run the node locally, identify whether it is
-alive, ready, accepting work, or degraded, and explain what the logs and
-metrics mean.
+The current `apiHealth` handler is an early acceptance-test target. It
+unconditionally returns `"status": "ok"` and `"blob_store": "ready"` without
+checking storage readiness. Operational status must reflect evidence: a
+running process is liveness, while a usable service is readiness. If a
+required dependency or write capability fails, readiness and the affected
+operation must show that limitation.
 
-### Milestone 1: real single-node Git forge
+Exit criteria: a student can run the node, identify whether it is alive, ready,
+accepting work, or degraded, and explain what the logs and metrics mean.
+
+## Stage 1: real single-node Git forge
 
 Implement only the core path first:
 
@@ -147,27 +129,143 @@ can follow HTTP once the authorization and repository lifecycle are correct.
 Exit criteria: a fresh installation can complete the smallest complete forge
 loop, and the homepage no longer needs fixture repositories to demonstrate it.
 
-### Milestone 2: collaboration and background work
+## Stage 2: first complete training lesson
 
-Add the mutable features that make a forge more than Git hosting:
+Bring the simulator forward as soon as the Git core works. The first simulator
+should be small and boring:
 
+- create a synthetic company, users, and repositories through a separate
+  validated seed/reset path;
+- perform normal repository operations through the public HTTP and Git
+  interfaces;
+- record attempted pushes, acknowledged pushes, and outcomes that were
+  uncertain because a connection failed;
+- inject one explicit, reversible fault;
+- collect scenario events, logs, metrics, and recovery assertions;
+- stop workloads, gather evidence, and reset only the assigned lab instance.
+
+The first lesson should be **Pushes are failing**:
+
+> A synthetic customer can browse existing repositories, but new pushes are
+> failing. Determine the affected operations, communicate the current impact,
+> restore writes safely, and verify repository integrity.
+
+The student submits an incident timeline, diagnosis evidence, changes made,
+verification results, and one prevention recommendation.
+
+The instructor guide must define:
+
+- starting state and synthetic customer context;
+- injected fault and intended blast radius;
+- expected signals and known-good baseline;
+- valid recovery approaches and unsafe actions;
+- hints and escalation path;
+- reset procedure and data-retention expectations;
+- objective outcome checks and a reasoning/communication rubric.
+
+Separate guided practice from assessment. Practice can provide the runbook and
+substantial help. Assessment should vary the circumstances so students must
+transfer principles rather than memorize commands.
+
+The first lesson passes only when the student demonstrates safe diagnosis,
+appropriate communication, successful recovery, and independently verifiable
+data integrity. A passing result applies to these training environments; it
+does not authorize customer production access. Define a retake policy before
+enrollment.
+
+## Lab Safety Contract
+
+No destructive exercise runs until these boundaries are implemented and
+documented:
+
+| Question | First-version contract |
+| --- | --- |
+| Where can faults run? | Only in explicitly provisioned, disposable training environments. |
+| What can students access? | Their assigned environment, synthetic data, and lab-only credentials. |
+| What can disk-full fill? | A size-limited training volume, never an arbitrary host filesystem. |
+| What happens when the forge dies? | A separate lab controller remains available to stop workload, collect evidence, and reset. |
+| What can reset delete? | Only resources belonging to a validated lab instance; never an arbitrary directory or endpoint. |
+
+Simulated customer traffic should use ordinary product interfaces. Fault
+injection, workload control, evidence collection, and emergency cleanup need a
+separate administrative path so an outage cannot disable the mechanism needed
+to end the exercise.
+
+For hosted exercises that grant meaningful administrative access, start with a
+disposable VM per student or small team. Containers can run inside that VM,
+but containerization alone is not the security boundary for privileged
+students. The training controller must validate instance identity before any
+stop, cleanup, or reset operation.
+
+This does not require a cloud lab platform before the pilot. A small
+provisioning script and manually scheduled disposable environments are enough
+to validate the first lesson.
+
+## Stage 3: small training pilot
+
+Before paid enrollment, run the proposed exercises with representative testers
+who did not design them. Verify that:
+
+- environments start and reset reliably;
+- instructions are understandable without author intervention;
+- logs, metrics, and feedback are deliverable;
+- a changed follow-up exercise reveals whether learning transferred;
+- instructor time and infrastructure consumption are sustainable;
+- the pinned Forge version is known and reproducible.
+
+An unexpected product bug should be recorded as a lab/platform problem, not
+silently counted as student failure. Do not make an automated judge of
+engineering judgment a prerequisite to launch. Software can check objective
+outcomes while an instructor reviews reasoning, communication, and safety.
+
+## Stage 4: expand from evidence
+
+Add only the features and jobs that unlock a product need or scheduled lesson:
+
+- a durable background-job table and worker loop;
+- backup and repository-integrity jobs;
 - issues and comments;
 - pull requests backed by Git refs;
 - reviews and merge state;
 - notifications/inbox;
 - webhooks;
-- a durable background-job table and worker loop;
-- basic artifact/package metadata and upload/download through the blob store.
+- basic artifact/package metadata and upload/download.
+
+A single backup or integrity-check job is enough to teach queue age, retries,
+idempotency, stuck work, and dead letters. The entire collaboration feature
+set is not a prerequisite for meaningful worker exercises.
 
 Every background operation needs visible state such as queued, running,
-succeeded, failed, or cancelled. This is the first point at which queue age,
-retry behavior, idempotency, and stuck work become meaningful SRE exercises.
+succeeded, failed, or cancelled. Every added feature needs a storage model,
+permission model, API contract, telemetry, and recovery behavior.
 
-Exit criteria: a student can trace a pull request or webhook from HTTP request
-through database state, job execution, Git/blob changes, and user-visible
-result.
+## Stage 5: replication and recovery network
 
-### Milestone 3: training simulator
+Only after the local loop, first lesson, and pilot are useful, add peer
+capabilities:
+
+- repository and blob manifests with hashes, sizes, and timestamps;
+- authenticated peer registration and capability advertisement;
+- asynchronous transfer and verification;
+- replica freshness and lag reporting;
+- backup verification and restore drills;
+- an explicit, manually initiated promotion workflow;
+- conflict prevention while a replica is promoted.
+
+Before a replacement accepts writes, the previous primary must be prevented
+from accepting competing writes. The later promotion drill should include the
+old node returning after the replica was promoted and test what prevents both
+nodes from accepting pushes.
+
+Start with repository Git data plus essential recovery metadata. Issues, pull
+requests, permissions, secrets, packages, and audit history need deliberate
+replication semantics; they should not be implied by copying a Git directory.
+
+Exit criteria: a student can distinguish a normal node failure, a stale
+replica, an incomplete restore, and a successful recovery. Automatic global
+failover is not required for the pilot.
+
+## Simulator design
 
 Build the simulator as a separate executable or package, for example:
 
@@ -188,7 +286,7 @@ The simulator should provide:
   requests, packages, and CI-like jobs;
 - scale factors so one laptop can run a small lab and a larger environment can
   model thousands of repositories;
-- a baseline workload and burst workload;
+- baseline, burst, and synchronized release workloads;
 - traffic mixes for browsing, clone/fetch, push, issue/PR activity, webhook
   delivery, artifact transfer, and background maintenance;
 - deterministic seeds and scenario IDs so an incident can be replayed;
@@ -197,107 +295,62 @@ The simulator should provide:
 - event records that explain what the simulator intended to do and what the
   forge actually returned.
 
-The simulator should not be a second fake frontend. Its value is that it makes
-the real product observable at a scale and cadence that a student can safely
+The simulator should not be a second fake frontend. Its value is making the
+real product observable at a scale and cadence that students can safely
 operate.
 
-### Milestone 4: replication and recovery
+## Initial scenarios
 
-Only after the local loop and simulator are useful, add peer capabilities:
-
-- repository and blob manifests with hashes, sizes, and timestamps;
-- authenticated peer registration and capability advertisement;
-- asynchronous transfer and verification;
-- replica freshness and lag reporting;
-- backup verification and restore drills;
-- an explicit, manually initiated promotion workflow;
-- conflict prevention while a replica is promoted.
-
-Start with repository Git data plus essential recovery metadata. Issues, pull
-requests, permissions, secrets, packages, and audit history need deliberate
-replication semantics; they should not be implied by copying a Git directory.
-
-Exit criteria: a student can distinguish a normal node failure, a stale
-replica, an incomplete restore, and a successful recovery. Automatic global
-failover is not required for this milestone.
-
-## Simulator scenarios for the first class
-
-The initial class does not need real businesses. It needs believable operating
+The first class does not need real businesses. It needs believable operating
 pressure with safe boundaries. Use synthetic tenants with stable names and
-documented characteristics, for example:
+documented characteristics:
 
 | Scenario | Shape | What it teaches |
 | --- | --- | --- |
 | `small-team` | 8 users, 20 repos, light pushes and issue traffic | install, logs, basic triage |
 | `growing-company` | 80 users, 250 repos, frequent fetches, PRs, and webhooks | capacity, queue behavior, noisy neighbors |
 | `enterprise-burst` | 500 users, 2,000 repos, scheduled clone/fetch and artifact bursts | rate limits, database and disk pressure |
-| `release-day` | normal baseline plus a synchronized push and package publish | backpressure, retries, incident command |
+| `release-day` | normal baseline plus synchronized push and package publish | backpressure, retries, incident command |
 | `node-loss` | primary process or host becomes unavailable | backup, replica freshness, restore and promotion |
 
-The numbers should be scale factors, not hard-coded promises. The same scenario
-must be runnable at `0.1x` on a laptop and at larger factors in a lab cluster.
+The numbers are scale factors, not hard-coded promises. The same scenario must
+run at `0.1x` on a laptop and larger factors in a lab environment.
 
-Fault injection should be explicit and reversible. The first fault library
-should cover:
+Fault injection should be explicit and reversible. The first fault library can
+cover API restart, worker crash, database latency, disk pressure, slow Git
+subprocesses, network delay, stale replicas, and bad deployment rollback. Do
+not begin with random chaos. Each scenario needs a hypothesis, blast radius,
+expected signals, recovery runbook, and reset path.
 
-- API process restart and abrupt termination;
-- worker crash and repeated job failure;
-- database latency, connection exhaustion, and read-only mode;
-- disk pressure and blob-store write failure;
-- slow or unavailable Git subprocesses;
-- network delay, dropped requests, and peer partition;
-- stale or incomplete replica;
-- bad configuration or bad deployment with rollback.
+## Reliability exercises and objectives
 
-Do not begin with chaotic random faults. Students learn faster when each
-scenario has a hypothesis, a known blast radius, expected signals, and a
-recovery runbook.
+Telemetry is not an objective by itself. Each lesson should define:
 
-## SRE student curriculum mapped to the product
+- the important user operation;
+- the measurement window;
+- what counts as success;
+- a target appropriate to the training workload;
+- the decision students must make when the target is missed.
 
-### Lab 1: install and explain the system
+These are lab objectives, not public hosting guarantees. Students should use
+them to choose between capacity, limits, retries, alerting, and recovery work
+under a limited infrastructure budget.
 
-Students deploy one node, create a repository, make a push, and draw the
-request path across the Go process, PostgreSQL, Git storage, and blob storage.
-They verify readiness and identify which data is mutable versus immutable.
+The incident loop is:
 
-### Lab 2: observe before changing
+```text
+diagnose
+  -> recover
+  -> explain
+  -> implement one preventive improvement
+  -> rerun the workload
+```
 
-Students use request IDs, structured logs, metrics, and health endpoints to
-answer: is the problem the API, database, Git subprocess, disk, or worker
-queue? The exercise should include a healthy-but-unavailable dependency so
-they do not rely on one green status indicator.
+The improvement can be a safer configuration, resource limit, alert, recovery
+check, or deployment procedure. Students should demonstrate that the rerun
+changed the relevant signal or reduced the blast radius.
 
-### Lab 3: capacity and backpressure
-
-Run `growing-company` and `enterprise-burst` at increasing scale. Students
-identify saturation, choose a safe limit, protect interactive Git operations,
-and explain the tradeoff between rejecting work and exhausting the node.
-
-### Lab 4: incident response
-
-Inject one fault at a time. Require a timeline, impact statement, hypothesis,
-mitigation, verification, and follow-up. The simulator should score evidence
-and recovery behavior, not just whether the process eventually becomes green.
-
-### Lab 5: backup, restore, and data integrity
-
-Students restore a node into a new data directory, verify blob hashes, check
-repository integrity with normal Git tooling, and compare expected versus
-actual RPO/RTO. A successful HTTP health check is not sufficient evidence of a
-successful restore.
-
-### Lab 6: degraded service and recovery partner
-
-Students inspect replica lag, stop the primary, decide whether a replica is
-fresh enough to promote, and communicate what is unavailable during recovery.
-The initial exercise should be manual and explicit; it should not hide the
-authority transition behind a magic automatic failover button.
-
-## SLOs and evidence
-
-The training environment should make these measurable from the beginning:
+The training environment should measure:
 
 - successful API request rate by route and tenant;
 - p50/p95/p99 latency for interactive and background operations;
@@ -309,9 +362,78 @@ The training environment should make these measurable from the beginning:
 - backup completion, restore duration, RPO, and RTO;
 - impact scope: affected tenants, repositories, and operation types.
 
-Students should receive dashboards and runbooks that are generated from these
-real signals. Avoid synthetic “everything is healthy” dashboards whose values
-are unrelated to the workload.
+## Recovery verification
+
+Recovery must be judged against an independent record, not only a green
+dashboard inside the environment being broken.
+
+The workload driver should record:
+
+- commits it attempted to push;
+- pushes acknowledged by the forge;
+- pushes with uncertain outcomes because the connection failed;
+- expected repository permissions and key metadata;
+- the backup or recovery point used by the scenario.
+
+After recovery, it should verify the corresponding repository state and access
+rules. This answers whether the data and permissions the exercise promised to
+preserve actually survived.
+
+Keep these exercises distinct:
+
+- **Process crash and restart:** verify persistence behavior for acknowledged
+  operations and identify uncertain client outcomes.
+- **Backup restore:** verify the documented recovery point, explicitly identify
+  changes made after the backup, and measure the resulting loss.
+- **Replica promotion:** verify write authority, freshness, and split-brain
+  prevention before and after the old node returns.
+
+The first backup procedure should be intentionally simple and consistent:
+pause all relevant writers, capture the required PostgreSQL metadata, Git
+repositories, blob store, configuration, and a manifest, then resume. Restore
+into a fresh environment and verify both data and permissions. Sophisticated
+online backups can come later; an unambiguous maintenance-window backup is a
+better first lesson.
+
+## Student curriculum
+
+### Lab 1: install and explain the system
+
+Students deploy one node, create a repository, make a push, and draw the
+request path across the Go process, PostgreSQL, Git storage, and blob storage.
+They verify readiness and identify mutable versus immutable data.
+
+### Lab 2: observe before changing
+
+Students use request IDs, structured logs, metrics, and health endpoints to
+answer whether a problem is in the API, database, Git subprocess, disk, or
+worker queue. The exercise includes a healthy-but-unavailable dependency so
+they do not rely on one green indicator.
+
+### Lab 3: capacity and backpressure
+
+Run `growing-company` and `enterprise-burst` at increasing scale. Students
+identify saturation, choose a safe limit, protect interactive Git operations,
+and explain the tradeoff between rejecting work and exhausting the node.
+
+### Lab 4: incident response
+
+Inject one fault at a time. Require a timeline, impact statement, hypothesis,
+mitigation, verification, prevention change, and follow-up. Score evidence and
+recovery behavior, not just whether the process eventually becomes green.
+
+### Lab 5: backup, restore, and data integrity
+
+Students restore a node into a new data directory, verify blob hashes, check
+repository integrity with normal Git tooling, and compare expected versus
+actual RPO/RTO. A successful HTTP health check is not sufficient evidence.
+
+### Lab 6: degraded service and recovery partner
+
+Students inspect replica lag, stop the primary, decide whether a replica is
+fresh enough to promote, and communicate what is unavailable during recovery.
+The initial exercise is manual and explicit; automatic failover is not needed
+to teach the authority transition.
 
 ## First implementation sprint
 
@@ -319,23 +441,22 @@ The next coherent slice should be:
 
 1. Add configuration, node identity, structured request logging, request IDs,
    liveness/readiness semantics, and a small metrics contract.
-2. Add the first PostgreSQL migration for users, workspaces, repositories,
+2. Make `apiHealth` truthful about storage/write readiness.
+3. Add the first PostgreSQL migration for users, workspaces, repositories,
    sessions, and audit events.
-3. Implement repository creation and listing, plus local bare-repository
+4. Implement repository creation and listing, plus local bare-repository
    lifecycle management.
-4. Define authenticated Git HTTP clone/fetch/push boundaries and test them with
+5. Define authenticated Git HTTP clone/fetch/push boundaries and test them with
    real Git commands.
-5. Replace the homepage's repository and activity constants with API-backed
+6. Replace the homepage's repository and activity constants with API-backed
    loading, empty, and error states.
-6. Add a tiny `small-team` simulator scenario that creates synthetic data and
+7. Add a tiny `small-team` simulator scenario that creates synthetic data and
    performs the same repository operations through HTTP/Git.
-7. Write the first runbook: “node unavailable during a push,” including the
-   exact logs, metrics, commands, and recovery evidence a student should
-   collect.
+8. Write the first student briefing, instructor guide, reset procedure, and
+   runbook: “node unavailable during a push.”
 
-This order gives us a usable Forge core and the first SRE lesson at the same
-time. It also establishes the interfaces that later issues, pull requests,
-Actions, packages, replication, and larger simulation scenarios must respect.
+This order gives us a usable Forge core, the first training lesson, and the
+evidence needed to choose what to build next.
 
 ## Explicit non-goals for now
 
@@ -345,7 +466,9 @@ Actions, packages, replication, and larger simulation scenarios must respect.
 - automatic federation before data ownership and promotion semantics are clear;
 - claiming better uptime than GitHub;
 - a simulator that bypasses the product's real APIs;
-- fake metrics or fake customer data presented as production state.
+- fake metrics or fake customer data presented as production state;
+- paid enrollment before an unfamiliar tester can complete and reset the first
+  lesson reliably.
 
 The durable Forkalope advantage is not that its first node never fails. It is
 that the system is understandable, observable, recoverable, and eventually
