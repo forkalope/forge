@@ -499,6 +499,15 @@ function NetworkingPage({ onNotice }: { onNotice: (message: string) => void }) {
     setSetupComplete(window.sessionStorage.getItem(`forkalope.setup.v2.complete.${snapshot.cluster_id}`) === "1");
   }, [snapshot?.cluster_id]);
 
+  const startOver = () => {
+    if (!window.confirm("Start over? This clears Forkalope setup progress in this browser. Running containers and node data will not be deleted.")) return;
+    Object.keys(window.sessionStorage)
+      .filter((key) => key.startsWith("forkalope.setup."))
+      .forEach((key) => window.sessionStorage.removeItem(key));
+    setSetupComplete(false);
+    onNotice("Setup progress cleared. Starting over.");
+  };
+
   if (snapshot && setupMode && !setupComplete) {
     return <section className="forklift-network-page forklift-network-page-setup">
       <SetupWizard clusterID={snapshot.cluster_id} onNotice={onNotice} onComplete={() => setSetupComplete(true)} />
@@ -508,7 +517,10 @@ function NetworkingPage({ onNotice }: { onNotice: (message: string) => void }) {
   return <section className="forklift-network-page">
     <div className="forklift-page-heading">
       <div><p className="forklift-eyebrow">{snapshot?.cluster_id ?? "Forkalope fabric"}</p><h1>Nodes</h1><p>Live membership as observed by the Forge node serving this page.</p></div>
-      <button className="forklift-outline-button" type="button" onClick={() => { setLoadState("loading"); setRefreshKey((value) => value + 1); }} disabled={loadState === "loading"}><RefreshCw size={15} className={loadState === "loading" ? "is-spinning" : ""} /> Refresh</button>
+      <div className="forklift-network-heading-actions">
+        {setupMode && setupComplete ? <button className="forklift-danger-button" type="button" onClick={startOver}><RefreshCw size={14} /> Start over</button> : null}
+        <button className="forklift-outline-button" type="button" onClick={() => { setLoadState("loading"); setRefreshKey((value) => value + 1); }} disabled={loadState === "loading"}><RefreshCw size={15} className={loadState === "loading" ? "is-spinning" : ""} /> Refresh</button>
+      </div>
     </div>
 
     {loadState === "error" && !snapshot ? <div className="forklift-network-message" role="alert"><AlertCircle size={18} /><div><strong>Node inventory unavailable</strong><p>The Forge API did not answer at <code>/api/v1/fabric/nodes</code>.</p></div><button type="button" onClick={() => setRefreshKey((value) => value + 1)}>Try again</button></div> : null}
