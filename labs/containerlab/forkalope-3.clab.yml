@@ -1,0 +1,28 @@
+name: forkalope-3
+
+topology:
+  defaults:
+    kind: linux
+    image: alpine:3.22
+    cmd: sleep 2147483647
+
+  nodes:
+    node-001:
+      exec:
+        - ip addr add 10.240.0.1/30 dev eth1
+        - ip addr add 10.240.0.10/30 dev eth2
+
+    node-002:
+      exec:
+        - ip addr add 10.240.0.2/30 dev eth1
+        - ip addr add 10.240.0.5/30 dev eth2
+
+    node-003:
+      exec:
+        - ip addr add 10.240.0.6/30 dev eth1
+        - ip addr add 10.240.0.9/30 dev eth2
+
+  links:
+    - endpoints: ["node-001:eth1", "node-002:eth1"]
+    - endpoints: ["node-002:eth2", "node-003:eth1"]
+    - endpoints: ["node-003:eth2", "node-001:eth2"]
