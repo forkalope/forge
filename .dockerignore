@@ -1,0 +1,5 @@
+.git
+.forkalope
+web/dist
+web/node_modules
+**/*.log

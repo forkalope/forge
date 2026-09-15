@@ -1,4 +1,4 @@
-import { useMemo, useState, type ComponentType, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
 import {
   Activity,
   AlertCircle,
@@ -36,6 +36,7 @@ import {
   Network,
   PauseCircle,
   Play,
+  RefreshCw,
   Search,
   Server,
   Settings,
@@ -149,7 +150,7 @@ const incidentTimeline = [
 ];
 
 function ForkliftPage() {
-  const [view, setView] = useState<ForkliftView>("overview");
+  const [view, setView] = useState<ForkliftView>("networking");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -185,9 +186,9 @@ function ForkliftPage() {
         </label>
 
         <div className="forklift-top-actions">
-          <label className="forklift-select"><Globe2 size={15} aria-hidden="true" /><span className="sr-only">Environment</span><select defaultValue="Production"><option>Production</option><option>Training lab</option><option>Local node</option></select><ChevronDown size={13} aria-hidden="true" /></label>
-          <label className="forklift-select forklift-time-select"><CalendarDays size={15} aria-hidden="true" /><span className="sr-only">Time range</span><select value={timeRange} onChange={(event) => setTimeRange(event.target.value)}><option>Last 6 hours</option><option>Last 24 hours</option><option>Last 7 days</option></select><ChevronDown size={13} aria-hidden="true" /></label>
-          <label className="forklift-select forklift-system-select"><span className="health-dot healthy" aria-hidden="true" /><span className="sr-only">System filter</span><select value={systemFilter} onChange={(event) => setSystemFilter(event.target.value)}><option>All systems</option><option>Healthy only</option><option>Degraded only</option></select><ChevronDown size={13} aria-hidden="true" /></label>
+          <label className="forklift-select"><Globe2 size={15} aria-hidden="true" /><span className="sr-only">Environment</span><select defaultValue="Training lab"><option>Production</option><option>Training lab</option><option>Local node</option></select><ChevronDown size={13} aria-hidden="true" /></label>
+          {view !== "networking" && <label className="forklift-select forklift-time-select"><CalendarDays size={15} aria-hidden="true" /><span className="sr-only">Time range</span><select value={timeRange} onChange={(event) => setTimeRange(event.target.value)}><option>Last 6 hours</option><option>Last 24 hours</option><option>Last 7 days</option></select><ChevronDown size={13} aria-hidden="true" /></label>}
+          {view !== "networking" && <label className="forklift-select forklift-system-select"><span className="health-dot healthy" aria-hidden="true" /><span className="sr-only">System filter</span><select value={systemFilter} onChange={(event) => setSystemFilter(event.target.value)}><option>All systems</option><option>Healthy only</option><option>Degraded only</option></select><ChevronDown size={13} aria-hidden="true" /></label>}
           <button className="forklift-icon-button forklift-notification-button" type="button" aria-label="Open notifications" onClick={() => showNotice("3 unread operational notifications.")}><Bell size={18} /><span>3</span></button>
           <button className="forklift-user-button" type="button" aria-label="Open Jordan Diaz account menu" onClick={() => showNotice("Account menu is available in the connected admin shell.")}><span className="forklift-avatar">JD</span><span className="forklift-user-copy"><strong>Jordan Diaz</strong><small>SRE</small></span><ChevronDown size={13} /></button>
         </div>
@@ -210,8 +211,8 @@ function ForkliftPage() {
 
         <main className="forklift-main">
           <div className="forklift-main-inner">
-            {view !== "incident-detail" && <IncidentStrip onClick={() => selectView("incident-detail")} />}
-            {view === "incident-detail" ? <IncidentPage onNotice={showNotice} onBack={() => selectView("overview")} /> : view === "actions" || view === "runners" ? <RunnersPage timeRange={timeRange} region={region} setRegion={setRegion} onNotice={showNotice} /> : view === "git-push" ? <GitPushPage timeRange={timeRange} region={region} setRegion={setRegion} onNotice={showNotice} /> : view === "overview" ? <OverviewPage onNavigate={selectView} onNotice={showNotice} /> : <UtilityPage view={view} query={query} visibleNavCount={searchableNav.length} onNotice={showNotice} />}
+            {view !== "incident-detail" && view !== "networking" && <IncidentStrip onClick={() => selectView("incident-detail")} />}
+            {view === "incident-detail" ? <IncidentPage onNotice={showNotice} onBack={() => selectView("overview")} /> : view === "actions" || view === "runners" ? <RunnersPage timeRange={timeRange} region={region} setRegion={setRegion} onNotice={showNotice} /> : view === "git-push" ? <GitPushPage timeRange={timeRange} region={region} setRegion={setRegion} onNotice={showNotice} /> : view === "overview" ? <OverviewPage onNavigate={selectView} onNotice={showNotice} /> : view === "networking" ? <NetworkingPage /> : <UtilityPage view={view} query={query} visibleNavCount={searchableNav.length} onNotice={showNotice} />}
             {view !== "incident-detail" && view === "overview" && <p className="forklift-fixture-note"><Info size={14} /> Forklift is showing deterministic training fixtures. Live metrics, logs, and controls will connect through the SRE admin API.</p>}
           </div>
         </main>
@@ -354,6 +355,111 @@ function Communications({ onNotice }: { onNotice: (message: string) => void }) {
 
 function IncidentNotes({ onNotice }: { onNotice: (message: string) => void }) {
   return <section className="forklift-panel incident-notes"><PanelHeading title="Incident Notes" icon={Archive} action={<button className="forklift-panel-link" type="button" onClick={() => onNotice("Note creation is not connected yet.")}>Add Note</button>} /><div className="note-row"><time>17:36</time><div><strong>Priya Shah</strong><p>Customer comms drafted, waiting for next update window.</p></div><b>···</b></div><div className="note-row"><time>17:20</time><div><strong>Taylor Kim</strong><p>Seeing improvement in blob store metrics. Continuing to monitor.</p></div><b>···</b></div></section>;
+}
+
+type FabricNode = {
+  id: string;
+  name: string;
+  role: string;
+  region: string;
+  version: string;
+  api_address: string;
+  fabric_addresses: string[];
+  started_at: string;
+  last_seen: string;
+  state: "online" | "unavailable";
+};
+
+type FabricSnapshot = {
+  cluster_id: string;
+  local_node_id: string;
+  observed_at: string;
+  nodes: FabricNode[];
+};
+
+function NetworkingPage() {
+  const [snapshot, setSnapshot] = useState<FabricSnapshot | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    const load = () => {
+      fetch("/api/v1/fabric/nodes", { headers: { Accept: "application/json" } })
+        .then((response) => {
+          if (!response.ok) throw new Error(`Node inventory returned ${response.status}`);
+          return response.json() as Promise<FabricSnapshot>;
+        })
+        .then((value) => {
+          if (!active) return;
+          setSnapshot(value);
+          setLoadState("ready");
+        })
+        .catch(() => active && setLoadState("error"));
+    };
+    load();
+    const interval = window.setInterval(load, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [refreshKey]);
+
+  const online = snapshot?.nodes.filter((node) => node.state === "online").length ?? 0;
+  const unavailable = (snapshot?.nodes.length ?? 0) - online;
+
+  return <section className="forklift-network-page">
+    <div className="forklift-page-heading">
+      <div><p className="forklift-eyebrow">{snapshot?.cluster_id ?? "Forkalope fabric"}</p><h1>Nodes</h1><p>Live membership as observed by the Forge node serving this page.</p></div>
+      <button className="forklift-outline-button" type="button" onClick={() => { setLoadState("loading"); setRefreshKey((value) => value + 1); }} disabled={loadState === "loading"}><RefreshCw size={15} className={loadState === "loading" ? "is-spinning" : ""} /> Refresh</button>
+    </div>
+
+    {loadState === "error" && !snapshot ? <div className="forklift-network-message" role="alert"><AlertCircle size={18} /><div><strong>Node inventory unavailable</strong><p>The Forge API did not answer at <code>/api/v1/fabric/nodes</code>.</p></div><button type="button" onClick={() => setRefreshKey((value) => value + 1)}>Try again</button></div> : null}
+    {loadState === "loading" && !snapshot ? <div className="forklift-network-message" aria-live="polite"><RefreshCw className="is-spinning" size={18} /><div><strong>Discovering nodes</strong><p>Reading this node’s current fabric membership view.</p></div></div> : null}
+
+    {snapshot ? <>
+      <div className="forklift-network-summary" aria-label="Fabric summary">
+        <div><span className="health-dot healthy" aria-hidden="true" /><strong>{online}</strong><span>online</span></div>
+        <div className={unavailable > 0 ? "has-warning" : ""}><span className="health-dot" aria-hidden="true" /><strong>{unavailable}</strong><span>unavailable</span></div>
+        <div><Server size={15} aria-hidden="true" /><strong>{snapshot.nodes.find((node) => node.id === snapshot.local_node_id)?.name ?? snapshot.local_node_id}</strong><span>serving this page</span></div>
+        <p role="status">Updated {formatNodeAge(snapshot.observed_at)}</p>
+      </div>
+
+      <div className="forklift-panel forklift-node-inventory">
+        <div className="forklift-panel-heading"><div><Network size={17} /><h2>Fabric membership</h2></div><span>Anti-entropy gossip · 15s expiry</span></div>
+        <div className="forklift-table-scroll">
+          <table className="forklift-table forklift-node-table">
+            <thead><tr><th scope="col">Node</th><th scope="col">State</th><th scope="col">Role</th><th scope="col">Region</th><th scope="col">Fabric addresses</th><th scope="col">API address</th><th scope="col">Last seen</th></tr></thead>
+            <tbody>{snapshot.nodes.map((node) => <tr key={node.id}>
+              <th scope="row"><span className="forklift-node-name"><Server size={15} /><span><strong>{node.name}</strong><small>{node.id === snapshot.local_node_id ? "This node" : node.id}</small></span></span></th>
+              <td><span className={`forklift-node-state ${node.state}`}><CircleDot size={13} />{node.state}</span></td>
+              <td>{node.role}</td>
+              <td>{node.region}</td>
+              <td><span className="forklift-address-list">{node.fabric_addresses.length ? node.fabric_addresses.map((address) => <code key={address}>{address}</code>) : <span>Not advertised</span>}</span></td>
+              <td><code>{displayAPIAddress(node.api_address)}</code></td>
+              <td>{node.id === snapshot.local_node_id ? "now" : formatNodeAge(node.last_seen)}</td>
+            </tr>)}</tbody>
+          </table>
+        </div>
+        <p className="forklift-membership-note"><Info size={14} /> This is an eventually consistent operational view. Node presence is not write authority, replica freshness, or proof of data durability.</p>
+      </div>
+    </> : null}
+  </section>;
+}
+
+function formatNodeAge(value: string) {
+  const elapsed = Math.max(0, Date.now() - new Date(value).getTime());
+  if (elapsed < 1500) return "just now";
+  if (elapsed < 60_000) return `${Math.floor(elapsed / 1000)}s ago`;
+  return `${Math.floor(elapsed / 60_000)}m ago`;
+}
+
+function displayAPIAddress(value: string) {
+  try {
+    return new URL(value).host;
+  } catch {
+    return value || "Not advertised";
+  }
 }
 
 function UtilityPage({ view, query, visibleNavCount, onNotice }: { view: ForkliftView; query: string; visibleNavCount: number; onNotice: (message: string) => void }) {

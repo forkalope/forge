@@ -2,6 +2,11 @@
 
 Forkalope starts as a modular monolith. The Go process owns the HTTP API, Git integration, background jobs, and storage orchestration. The React application is built as static assets and can be served by the same process.
 
+Each node also maintains an eventually consistent operational view of the
+Forkalope Fabric. The communication boundary and its separation from Nebula's
+transport-level discovery are documented in
+[fabric-discovery.md](./fabric-discovery.md).
+
 ## Storage boundary
 
 The default `LocalBlobStore` stores immutable files at:

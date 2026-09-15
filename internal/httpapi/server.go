@@ -8,16 +8,18 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/forkalope/forge/internal/fabric"
 	"github.com/forkalope/forge/internal/storage"
 )
 
 type Server struct {
 	blobs      *storage.LocalBlobStore
+	fabric     *fabric.Registry
 	staticRoot string
 }
 
-func NewServer(blobs *storage.LocalBlobStore, staticRoot string) *Server {
-	return &Server{blobs: blobs, staticRoot: staticRoot}
+func NewServer(blobs *storage.LocalBlobStore, registry *fabric.Registry, staticRoot string) *Server {
+	return &Server{blobs: blobs, fabric: registry, staticRoot: staticRoot}
 }
 
 func (s *Server) Handler() http.Handler {
@@ -25,8 +27,14 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /healthz", s.healthz)
 	mux.HandleFunc("GET /api/v1/health", s.apiHealth)
 	mux.HandleFunc("GET /api/v1/meta", s.meta)
+	mux.HandleFunc("GET /api/v1/fabric/nodes", s.fabricNodes)
+	mux.HandleFunc("GET /api/v1/fabric/gossip", s.fabricNodes)
 	mux.HandleFunc("GET /", s.frontend)
 	return withHeaders(withLogging(mux))
+}
+
+func (s *Server) fabricNodes(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, s.fabric.Snapshot())
 }
 
 func (s *Server) healthz(w http.ResponseWriter, _ *http.Request) {
