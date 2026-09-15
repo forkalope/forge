@@ -199,8 +199,8 @@
 .forklift-setup-kicker { margin: 0 0 11px; color: var(--fk-blue); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .forklift-setup-content h1 { max-width: 390px; margin: 0; color: var(--fk-text); font-size: clamp(25px, 4vw, 34px); letter-spacing: -.035em; line-height: 1.08; }
 .forklift-setup-detail { max-width: 390px; margin: 11px 0 0; color: var(--fk-muted); font-size: 13px; line-height: 1.55; }
-.forklift-setup-status { display: inline-flex; align-items: center; gap: 7px; margin-top: 24px; color: var(--fk-green); font-size: 11px; font-weight: 650; }
-.forklift-setup-next { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; margin-top: 28px; padding: 0 15px; border: 1px solid #3185c8; border-radius: 5px; background: #17466c; color: #d9efff; font-size: 11px; font-weight: 650; }
+.forklift-setup-status { display: flex; align-items: center; gap: 7px; width: max-content; margin-top: 24px; color: var(--fk-green); font-size: 11px; font-weight: 650; }
+.forklift-setup-next { display: flex; align-items: center; gap: 7px; width: max-content; min-height: 40px; margin-top: 28px; padding: 0 15px; border: 1px solid #3185c8; border-radius: 5px; background: #17466c; color: #d9efff; font-size: 11px; font-weight: 650; }
 .forklift-setup-next:hover { background: #1b5682; }
 .forklift-node-actions { display: flex; align-items: center; gap: 8px; color: var(--fk-subtle); font-size: 10px; }
 .forklift-node-actions button { display: inline-flex; align-items: center; gap: 4px; min-height: 26px; padding: 0 7px; border: 1px solid #2d4e61; border-radius: 4px; background: #102533; color: #b8d7e7; font-size: 9px; }
