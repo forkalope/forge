@@ -7,6 +7,10 @@ Forkalope Fabric. The communication boundary and its separation from Nebula's
 transport-level discovery are documented in
 [fabric-discovery.md](./fabric-discovery.md).
 
+The local authority boundary for independently operated franchises and the
+two-sided federation exercise are documented in
+[franchises.md](./franchises.md).
+
 ## Storage boundary
 
 The default `LocalBlobStore` stores immutable files at:

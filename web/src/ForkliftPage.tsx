@@ -88,6 +88,10 @@ const secondaryNav: Array<{ label: string; view: ForkliftView; icon: Icon }> = [
   { label: "Settings", view: "settings", icon: Settings },
 ];
 
+// Keep the richer operator surfaces in the source while the live control
+// plane is still being built. Re-enable these views as their APIs become real.
+const SHOW_UNWIRED_SURFACES = false;
+
 const metrics = [
   { label: "Affected services", value: "4", suffix: "/ 12", note: "3 degraded · 1 partial outage", tone: "danger", icon: Layers3 },
   { label: "Open incidents", value: "2", suffix: "", note: "1 SEV-1 · 1 SEV-3", tone: "danger", icon: CircleAlert },
@@ -159,7 +163,9 @@ function ForkliftPage() {
   const [region, setRegion] = useState("All regions");
   const [systemFilter, setSystemFilter] = useState("All systems");
 
-  const searchableNav = useMemo(() => [...primaryNav, ...secondaryNav].filter((item) => item.label.toLowerCase().includes(query.toLowerCase())), [query]);
+  const availablePrimaryNav = SHOW_UNWIRED_SURFACES ? primaryNav : primaryNav.filter((item) => item.view === "networking");
+  const availableSecondaryNav = SHOW_UNWIRED_SURFACES ? secondaryNav : [];
+  const searchableNav = useMemo(() => [...availablePrimaryNav, ...availableSecondaryNav].filter((item) => item.label.toLowerCase().includes(query.toLowerCase())), [availablePrimaryNav, availableSecondaryNav, query]);
 
   const selectView = (nextView: ForkliftView) => {
     setView(nextView);
@@ -178,19 +184,19 @@ function ForkliftPage() {
           <span className="forklift-product-name">Forklift</span>
         </div>
 
-        <label className="forklift-global-search">
+        {SHOW_UNWIRED_SURFACES && <label className="forklift-global-search">
           <Search size={17} aria-hidden="true" />
           <span className="sr-only">Search services, repositories, incidents, or runbooks</span>
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search services, repositories, incidents, runbooks…" />
           <kbd>⌘ K</kbd>
-        </label>
+        </label>}
 
         <div className="forklift-top-actions">
-          <label className="forklift-select"><Globe2 size={15} aria-hidden="true" /><span className="sr-only">Environment</span><select defaultValue="Training lab"><option>Production</option><option>Training lab</option><option>Local node</option></select><ChevronDown size={13} aria-hidden="true" /></label>
+          {SHOW_UNWIRED_SURFACES && <><label className="forklift-select"><Globe2 size={15} aria-hidden="true" /><span className="sr-only">Environment</span><select defaultValue="Training lab"><option>Production</option><option>Training lab</option><option>Local node</option></select><ChevronDown size={13} aria-hidden="true" /></label>
           {view !== "networking" && <label className="forklift-select forklift-time-select"><CalendarDays size={15} aria-hidden="true" /><span className="sr-only">Time range</span><select value={timeRange} onChange={(event) => setTimeRange(event.target.value)}><option>Last 6 hours</option><option>Last 24 hours</option><option>Last 7 days</option></select><ChevronDown size={13} aria-hidden="true" /></label>}
           {view !== "networking" && <label className="forklift-select forklift-system-select"><span className="health-dot healthy" aria-hidden="true" /><span className="sr-only">System filter</span><select value={systemFilter} onChange={(event) => setSystemFilter(event.target.value)}><option>All systems</option><option>Healthy only</option><option>Degraded only</option></select><ChevronDown size={13} aria-hidden="true" /></label>}
           <button className="forklift-icon-button forklift-notification-button" type="button" aria-label="Open notifications" onClick={() => showNotice("3 unread operational notifications.")}><Bell size={18} /><span>3</span></button>
-          <button className="forklift-user-button" type="button" aria-label="Open Jordan Diaz account menu" onClick={() => showNotice("Account menu is available in the connected admin shell.")}><span className="forklift-avatar">JD</span><span className="forklift-user-copy"><strong>Jordan Diaz</strong><small>SRE</small></span><ChevronDown size={13} /></button>
+          <button className="forklift-user-button" type="button" aria-label="Open Jordan Diaz account menu" onClick={() => showNotice("Account menu is available in the connected admin shell.")}><span className="forklift-avatar">JD</span><span className="forklift-user-copy"><strong>Jordan Diaz</strong><small>SRE</small></span><ChevronDown size={13} /></button></>}
         </div>
       </header>
 
@@ -199,12 +205,9 @@ function ForkliftPage() {
           <div className="forklift-sidebar-scroll">
             <p className="forklift-sidebar-heading">Control plane</p>
             <nav className="forklift-nav" aria-label="Control plane">
-              {primaryNav.map((item) => <ForkliftNavItem key={item.view} item={item} active={view === item.view || (item.view === "incidents" && view === "incident-detail")} onClick={() => selectView(item.view)} />)}
+              {availablePrimaryNav.map((item) => <ForkliftNavItem key={item.view} item={item} active={view === item.view || (item.view === "incidents" && view === "incident-detail")} onClick={() => selectView(item.view)} />)}
             </nav>
-            <p className="forklift-sidebar-heading forklift-sidebar-heading-spaced">Operations</p>
-            <nav className="forklift-nav" aria-label="Operations">
-              {secondaryNav.map((item) => <ForkliftNavItem key={item.view} item={item} active={view === item.view} onClick={() => selectView(item.view)} />)}
-            </nav>
+            {availableSecondaryNav.length > 0 && <><p className="forklift-sidebar-heading forklift-sidebar-heading-spaced">Operations</p><nav className="forklift-nav" aria-label="Operations">{availableSecondaryNav.map((item) => <ForkliftNavItem key={item.view} item={item} active={view === item.view} onClick={() => selectView(item.view)} />)}</nav></>}
           </div>
           <button className="forklift-collapse-button" type="button" onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}><ChevronLeft size={17} className={sidebarCollapsed ? "rotate-chevron" : ""} /><span>{sidebarCollapsed ? "Expand" : "Collapse"}</span></button>
         </aside>
@@ -212,7 +215,7 @@ function ForkliftPage() {
         <main className="forklift-main">
           <div className="forklift-main-inner">
             {view !== "incident-detail" && view !== "networking" && <IncidentStrip onClick={() => selectView("incident-detail")} />}
-            {view === "incident-detail" ? <IncidentPage onNotice={showNotice} onBack={() => selectView("overview")} /> : view === "actions" || view === "runners" ? <RunnersPage timeRange={timeRange} region={region} setRegion={setRegion} onNotice={showNotice} /> : view === "git-push" ? <GitPushPage timeRange={timeRange} region={region} setRegion={setRegion} onNotice={showNotice} /> : view === "overview" ? <OverviewPage onNavigate={selectView} onNotice={showNotice} /> : view === "networking" ? <NetworkingPage /> : <UtilityPage view={view} query={query} visibleNavCount={searchableNav.length} onNotice={showNotice} />}
+            {view === "incident-detail" ? <IncidentPage onNotice={showNotice} onBack={() => selectView("overview")} /> : view === "actions" || view === "runners" ? <RunnersPage timeRange={timeRange} region={region} setRegion={setRegion} onNotice={showNotice} /> : view === "git-push" ? <GitPushPage timeRange={timeRange} region={region} setRegion={setRegion} onNotice={showNotice} /> : view === "overview" ? <OverviewPage onNavigate={selectView} onNotice={showNotice} /> : view === "networking" ? <NetworkingPage onNotice={showNotice} /> : <UtilityPage view={view} query={query} visibleNavCount={searchableNav.length} onNotice={showNotice} />}
             {view !== "incident-detail" && view === "overview" && <p className="forklift-fixture-note"><Info size={14} /> Forklift is showing deterministic training fixtures. Live metrics, logs, and controls will connect through the SRE admin API.</p>}
           </div>
         </main>
@@ -377,10 +380,51 @@ type FabricSnapshot = {
   nodes: FabricNode[];
 };
 
-function NetworkingPage() {
+type FederationStep = {
+  key: string;
+  label: string;
+  state: "complete" | "pending";
+  detail: string;
+};
+
+type FederationManifest = {
+  franchise_id: string;
+  name: string;
+  endpoint: string;
+  fingerprint: string;
+};
+
+type FederationContract = {
+  id: string;
+  remote_manifest: FederationManifest;
+  proposal_sent: boolean;
+  proposal_received: boolean;
+  local_approved: boolean;
+  remote_approved: boolean;
+  gateway_reachable: boolean;
+  state: string;
+  last_error?: string;
+};
+
+type FederationStatus = {
+  local: FederationManifest;
+  peer_configured: boolean;
+  peer_url?: string;
+  peer_franchise?: string;
+  contract?: FederationContract;
+  steps: FederationStep[];
+};
+
+function NetworkingPage({ onNotice }: { onNotice: (message: string) => void }) {
   const [snapshot, setSnapshot] = useState<FabricSnapshot | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [federation, setFederation] = useState<FederationStatus | null>(null);
+  const [federationState, setFederationState] = useState<"loading" | "ready" | "error">("loading");
+  const [federationRefreshKey, setFederationRefreshKey] = useState(0);
+  const [federationAction, setFederationAction] = useState<string | null>(null);
+  const [federationError, setFederationError] = useState<string | null>(null);
+  const [setupComplete, setSetupComplete] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -405,8 +449,61 @@ function NetworkingPage() {
     };
   }, [refreshKey]);
 
+  useEffect(() => {
+    let active = true;
+    const load = () => {
+      fetch("/api/v1/federation/status", { headers: { Accept: "application/json" } })
+        .then((response) => {
+          if (!response.ok) throw new Error(`Federation status returned ${response.status}`);
+          return response.json() as Promise<FederationStatus>;
+        })
+        .then((value) => {
+          if (!active) return;
+          setFederation(value);
+          setFederationState("ready");
+          setFederationError(null);
+        })
+        .catch(() => active && setFederationState("error"));
+    };
+    load();
+    const interval = window.setInterval(load, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [federationRefreshKey]);
+
+  const runFederationAction = (path: string, label: string) => {
+    setFederationAction(label);
+    setFederationError(null);
+    fetch(path, { method: "POST", headers: { Accept: "application/json" } })
+      .then(async (response) => {
+        const body = await response.json().catch(() => null) as FederationStatus | { error?: string } | null;
+        if (!response.ok) throw new Error(body && "error" in body && body.error ? body.error : `Action returned ${response.status}`);
+        return body as FederationStatus;
+      })
+      .then((value) => {
+        setFederation(value);
+        setFederationState("ready");
+      })
+      .catch((error: Error) => setFederationError(error.message))
+      .finally(() => setFederationAction(null));
+  };
+
   const online = snapshot?.nodes.filter((node) => node.state === "online").length ?? 0;
   const unavailable = (snapshot?.nodes.length ?? 0) - online;
+  const setupMode = Boolean(snapshot && snapshot.nodes.length < 3);
+
+  useEffect(() => {
+    if (!snapshot) return;
+    setSetupComplete(window.sessionStorage.getItem(`forkalope.setup.v2.complete.${snapshot.cluster_id}`) === "1");
+  }, [snapshot?.cluster_id]);
+
+  if (snapshot && setupMode && !setupComplete) {
+    return <section className="forklift-network-page forklift-network-page-setup">
+      <SetupWizard clusterID={snapshot.cluster_id} onNotice={onNotice} onComplete={() => setSetupComplete(true)} />
+    </section>;
+  }
 
   return <section className="forklift-network-page">
     <div className="forklift-page-heading">
@@ -417,6 +514,10 @@ function NetworkingPage() {
     {loadState === "error" && !snapshot ? <div className="forklift-network-message" role="alert"><AlertCircle size={18} /><div><strong>Node inventory unavailable</strong><p>The Forge API did not answer at <code>/api/v1/fabric/nodes</code>.</p></div><button type="button" onClick={() => setRefreshKey((value) => value + 1)}>Try again</button></div> : null}
     {loadState === "loading" && !snapshot ? <div className="forklift-network-message" aria-live="polite"><RefreshCw className="is-spinning" size={18} /><div><strong>Discovering nodes</strong><p>Reading this node’s current fabric membership view.</p></div></div> : null}
 
+    {federationState === "error" ? <div className="forklift-network-message" role="alert"><AlertCircle size={18} /><div><strong>Federation status unavailable</strong><p>The local node did not answer at <code>/api/v1/federation/status</code>; the checklist may be stale.</p></div><button type="button" onClick={() => setFederationRefreshKey((value) => value + 1)}>Try again</button></div> : null}
+    {federationState === "loading" && !federation ? <div className="forklift-network-message" aria-live="polite"><RefreshCw className="is-spinning" size={18} /><div><strong>Reading federation state</strong><p>Checking identity, peer configuration, approvals, and gateway reachability.</p></div></div> : null}
+    {federation ? <FederationPanel status={federation} action={federationAction} error={federationError} onAction={runFederationAction} /> : null}
+
     {snapshot ? <>
       <div className="forklift-network-summary" aria-label="Fabric summary">
         <div><span className="health-dot healthy" aria-hidden="true" /><strong>{online}</strong><span>online</span></div>
@@ -426,7 +527,7 @@ function NetworkingPage() {
       </div>
 
       <div className="forklift-panel forklift-node-inventory">
-        <div className="forklift-panel-heading"><div><Network size={17} /><h2>Fabric membership</h2></div><span>Anti-entropy gossip · 15s expiry</span></div>
+        <div className="forklift-panel-heading"><div><Network size={17} /><h2>Fabric membership</h2></div><div className="forklift-node-actions"><button type="button" onClick={() => onNotice("Node provisioning will use the approved lab defaults in the next setup step.")}><span aria-hidden="true">+</span> Add node</button><button type="button" onClick={() => onNotice("A new franchise machine requires a separate enrollment flow.")}><span aria-hidden="true">+</span> Add machine</button><span>Anti-entropy gossip · 15s expiry</span></div></div>
         <div className="forklift-table-scroll">
           <table className="forklift-table forklift-node-table">
             <thead><tr><th scope="col">Node</th><th scope="col">State</th><th scope="col">Role</th><th scope="col">Region</th><th scope="col">Fabric addresses</th><th scope="col">API address</th><th scope="col">Last seen</th></tr></thead>
@@ -444,6 +545,60 @@ function NetworkingPage() {
         <p className="forklift-membership-note"><Info size={14} /> This is an eventually consistent operational view. Node presence is not write authority, replica freshness, or proof of data durability.</p>
       </div>
     </> : null}
+  </section>;
+}
+
+function SetupWizard({ clusterID, onNotice, onComplete }: { clusterID: string; onNotice: (message: string) => void; onComplete: () => void }) {
+  const storageKey = `forkalope.setup.v2.step.${clusterID}`;
+  const [step, setStep] = useState(() => Math.max(0, Math.min(2, Number(window.sessionStorage.getItem(storageKey) ?? "0") || 0)));
+  const advance = () => {
+    const next = Math.min(step + 1, 2);
+    setStep(next);
+    window.sessionStorage.setItem(storageKey, String(next));
+    if (next === 1) onNotice("Launch plan approved. The next deployment uses the default three-node lab.");
+  };
+  const finish = () => {
+    window.sessionStorage.setItem(`forkalope.setup.v2.complete.${clusterID}`, "1");
+    onComplete();
+  };
+  const steps = ["Machine", "Plan", "Finish"];
+  const content = [
+    { title: "Your machine is ready", detail: "Forkalope found one machine to work with.", status: "Machine detected", action: "Continue" },
+    { title: "Approve the default plan", detail: "We will launch the standard three-node lab.", status: "No choices required", action: "Approve plan" },
+    { title: "Setup is complete", detail: "You can now see and manage this franchise.", status: "Ready to enter Forklift", action: "Open Forklift" },
+  ][step];
+  return <section className="forklift-setup-wizard" aria-labelledby="setup-heading">
+    <div className="forklift-setup-progress"><span>Setup</span><ol aria-label="Setup progress">{steps.map((label, index) => <li className={index <= step ? "is-active" : ""} key={label}><span>{index + 1}</span><small>{label}</small></li>)}</ol><strong>{step + 1} <small>/ 3</small></strong></div>
+    <div className="forklift-setup-content">
+      <p className="forklift-setup-kicker">Forkalope</p>
+      <h1 id="setup-heading">{content.title}</h1>
+      <p className="forklift-setup-detail">{content.detail}</p>
+      <div className="forklift-setup-status"><CircleCheck size={16} /><span>{content.status}</span></div>
+      <button className="forklift-setup-next" type="button" onClick={step < 2 ? advance : finish}>{content.action}<ArrowRightIcon /></button>
+    </div>
+  </section>;
+}
+
+function ArrowRightIcon() {
+  return <ArrowUpRight size={15} aria-hidden="true" />;
+}
+
+function FederationPanel({ status, action, error, onAction }: { status: FederationStatus; action: string | null; error: string | null; onAction: (path: string, label: string) => void }) {
+  const contract = status.contract;
+  const actionPath = !status.peer_configured ? null : !contract ? "/api/v1/federation/propose" : !contract.local_approved ? "/api/v1/federation/approve" : contract.remote_approved && !contract.gateway_reachable ? "/api/v1/federation/probe" : null;
+  const actionLabel = !contract ? "Send proposal" : !contract.local_approved ? "Approve proposal" : "Probe gateway";
+  const actionDescription = !status.peer_configured ? "Configure a peer endpoint on this node before proposing." : !contract ? `Ask ${status.peer_franchise} to review a signed node-observation contract.` : !contract.local_approved ? "Review the peer identity and record this franchise's approval." : !contract.remote_approved ? "Local approval is recorded; waiting for the peer operator's approval." : !contract.gateway_reachable ? "Both sides have approved. Verify the peer gateway from this node." : "Federation is active for the node-observation scope.";
+
+  return <section className="forklift-panel forklift-federation-panel" aria-labelledby="federation-heading">
+    <div className="forklift-panel-heading"><div><Cable size={17} /><h2 id="federation-heading">Franchise federation</h2></div><span>{status.local.name} · signed identity</span></div>
+    <div className="forklift-federation-meta">
+      <span><small>Local franchise</small><strong>{status.local.franchise_id}</strong><code>{status.local.fingerprint}</code></span>
+      <span><small>Peer</small><strong>{status.peer_franchise ?? "Not configured"}</strong><code>{status.peer_url ?? "Add a federation endpoint"}</code></span>
+      <span><small>Contract</small><strong>{contract ? contract.state : "Not started"}</strong><code>{contract?.id ?? "—"}</code></span>
+    </div>
+    <div className="forklift-federation-action"><div><strong>{actionDescription}</strong>{error ? <p className="forklift-federation-error" role="alert"><AlertCircle size={13} />{error}</p> : null}</div>{actionPath ? <button className="forklift-outline-button" type="button" onClick={() => onAction(actionPath, actionLabel)} disabled={Boolean(action)}>{action ? <RefreshCw size={14} className="is-spinning" /> : <ArrowUpRight size={14} />}{action === actionLabel ? "Working…" : actionLabel}</button> : contract?.gateway_reachable ? <span className="forklift-federation-active"><CircleCheck size={14} /> Active</span> : <span className="forklift-federation-waiting"><Clock3 size={14} /> Waiting</span>}</div>
+    <ol className="forklift-federation-steps">{status.steps.map((step) => <li className={`forklift-federation-step ${step.state}`} key={step.key}><span className="forklift-federation-step-icon">{step.state === "complete" ? <CircleCheck size={15} /> : <Clock3 size={15} />}</span><span><strong>{step.label}</strong><small>{step.detail}</small></span></li>)}</ol>
+    {contract?.remote_manifest?.fingerprint ? <p className="forklift-federation-note"><ShieldCheck size={14} /> Peer signing key verified: <code>{contract.remote_manifest.fingerprint}</code>. Approval is bilateral; either franchise can decline before the gateway opens.</p> : null}
   </section>;
 }
 

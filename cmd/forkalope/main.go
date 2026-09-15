@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/forkalope/forge/internal/fabric"
+	"github.com/forkalope/forge/internal/federation"
 	"github.com/forkalope/forge/internal/httpapi"
 	"github.com/forkalope/forge/internal/storage"
 )
@@ -26,6 +27,11 @@ func main() {
 	advertiseURL := flag.String("advertise-url", "http://localhost:8080", "API URL other fabric nodes can reach")
 	fabricAddresses := flag.String("fabric-addresses", "", "comma-separated private fabric addresses")
 	peerURLs := flag.String("peers", "", "comma-separated bootstrap peer API URLs")
+	franchiseID := flag.String("franchise-id", "", "local franchise identity (defaults to cluster ID)")
+	franchiseName := flag.String("franchise-name", "", "display name for the local franchise")
+	federationEndpoint := flag.String("federation-endpoint", "", "endpoint other franchises can reach")
+	federationPeer := flag.String("federation-peer", "", "peer franchise federation endpoint")
+	federationPeerID := flag.String("federation-peer-id", "", "expected peer franchise identity")
 	flag.Parse()
 
 	blobStore, err := storage.NewLocalBlobStore(*dataDir)
@@ -54,9 +60,33 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go registry.Run(ctx)
+	effectiveFranchiseID := strings.TrimSpace(*franchiseID)
+	if effectiveFranchiseID == "" {
+		effectiveFranchiseID = *clusterID
+	}
+	effectiveFranchiseName := strings.TrimSpace(*franchiseName)
+	if effectiveFranchiseName == "" {
+		effectiveFranchiseName = effectiveFranchiseID
+	}
+	effectiveFederationEndpoint := strings.TrimSpace(*federationEndpoint)
+	if effectiveFederationEndpoint == "" {
+		effectiveFederationEndpoint = *advertiseURL
+	}
+	federationService, err := federation.NewService(federation.Config{
+		DataDir:         *dataDir,
+		FranchiseID:     effectiveFranchiseID,
+		FranchiseName:   effectiveFranchiseName,
+		Endpoint:        effectiveFederationEndpoint,
+		PeerURL:         *federationPeer,
+		PeerFranchiseID: *federationPeerID,
+	})
+	if err != nil {
+		slog.Error("initialize federation", "error", err)
+		os.Exit(1)
+	}
 
-	server := httpapi.NewServer(blobStore, registry, "web/dist")
-	slog.Info("starting Forkalope", "addr", *addr, "data_dir", *dataDir, "node_id", *nodeID, "cluster_id", *clusterID)
+	server := httpapi.NewServer(blobStore, registry, federationService, "web/dist")
+	slog.Info("starting Forkalope", "addr", *addr, "data_dir", *dataDir, "node_id", *nodeID, "cluster_id", *clusterID, "franchise_id", effectiveFranchiseID)
 	if err := http.ListenAndServe(*addr, server.Handler()); err != nil {
 		slog.Error("server stopped", "error", err)
 		os.Exit(1)

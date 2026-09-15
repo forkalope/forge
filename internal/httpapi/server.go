@@ -9,17 +9,19 @@ import (
 	"strings"
 
 	"github.com/forkalope/forge/internal/fabric"
+	"github.com/forkalope/forge/internal/federation"
 	"github.com/forkalope/forge/internal/storage"
 )
 
 type Server struct {
 	blobs      *storage.LocalBlobStore
 	fabric     *fabric.Registry
+	federation *federation.Service
 	staticRoot string
 }
 
-func NewServer(blobs *storage.LocalBlobStore, registry *fabric.Registry, staticRoot string) *Server {
-	return &Server{blobs: blobs, fabric: registry, staticRoot: staticRoot}
+func NewServer(blobs *storage.LocalBlobStore, registry *fabric.Registry, federationService *federation.Service, staticRoot string) *Server {
+	return &Server{blobs: blobs, fabric: registry, federation: federationService, staticRoot: staticRoot}
 }
 
 func (s *Server) Handler() http.Handler {
@@ -29,7 +31,10 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/v1/meta", s.meta)
 	mux.HandleFunc("GET /api/v1/fabric/nodes", s.fabricNodes)
 	mux.HandleFunc("GET /api/v1/fabric/gossip", s.fabricNodes)
-	mux.HandleFunc("GET /", s.frontend)
+	if s.federation != nil {
+		mux.Handle("/api/v1/federation/", s.federation.Handler())
+	}
+	mux.HandleFunc("/", s.frontend)
 	return withHeaders(withLogging(mux))
 }
 
