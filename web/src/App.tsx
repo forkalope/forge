@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import RepoPage from "./RepoPage";
 import SiteFooter from "./SiteFooter";
+import ForkliftPage from "./ForkliftPage";
 
 type ApiHealth = {
   status: string;
@@ -343,6 +344,7 @@ function ChangelogItem({ time, title }: { time: string; title: string }) {
 }
 
 function App() {
+  if (window.location.pathname === "/forklift") return <ForkliftPage />;
   return window.location.pathname === "/test/repo" ? <RepoPage /> : <HomePage />;
 }
 
